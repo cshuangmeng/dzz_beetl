@@ -64,6 +64,9 @@
   		<if test="null!=param.category">
   			and t.category=#{param.category}
   		</if>
+  		<if test="null!=param.title and param.title!=''">
+  			and t.title like concat('%',#{param.title},'%')
+  		</if>
   		<if test="null!=param.states">
   			and t.state in 
   			<foreach collection="param.states" item="state" open="(" separator="," close=")">

@@ -1,6 +1,7 @@
 package com.yixiang.api.brand.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -14,6 +15,8 @@ public interface BrandCarMapper {
 	int insertSelective(BrandCar record);
 
 	List<BrandCar> selectByExample(QueryExample example);
+	
+	List<BrandCar> selectByParam(@Param("param")Map<String,Object> param);
 
 	int updateByExampleSelective(@Param("record") BrandCar record, @Param("example") QueryExample example);
 

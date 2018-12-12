@@ -1,8 +1,11 @@
 package com.yixiang.api.brand.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.brand.service.BrandCarComponent;
 import com.yixiang.api.util.Constants;
+import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.Result;
 
 @RestController
@@ -25,8 +30,8 @@ public class BrandCarController {
 	
 	//下发精选车型
 	@RequestMapping("/special")
-	public Result querySpecialCars(){
-		List<Map<Object,Object>> result=brandCarComponent.querySpecialCars();
+	public Result querySpecialCars(@RequestParam(required=false)Integer source){
+		List<Map<Object,Object>> result=brandCarComponent.querySpecialCars(source);
 		if(Result.noError()){
 			Result.putValue(result);
 		}
@@ -35,10 +40,20 @@ public class BrandCarController {
 	
 	//下发所有品牌车型
 	@RequestMapping("/list")
-	public Result queryAllCars(@RequestParam Integer brandId){
-		List<Map<Object,Object>> result=brandCarComponent.queryAllCars(brandId);
+	public Result queryAllCars(@RequestParam Map<String,Object> param){
+		List<Map<Object,Object>> result=brandCarComponent.queryAllCars(param);
 		if(Result.noError()){
 			Result.putValue(result);
+		}
+		return Result.getThreadObject();
+	}
+	
+	//车型热门搜索关键字
+	@RequestMapping("/keys")
+	public Result hotKeys(@RequestParam(required=false) String uuid){
+		String keys=Redis.use().get("car_hot_keys");
+		if(StringUtils.isNotEmpty(keys)){
+			Result.putValue(Arrays.asList(keys.split(",")).stream().map(i->DataUtil.mapOf("key",i)).collect(Collectors.toList()));
 		}
 		return Result.getThreadObject();
 	}

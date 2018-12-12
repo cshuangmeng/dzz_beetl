@@ -140,17 +140,16 @@ public class ArticleInfoComponent {
 	}
 	
 	//加载用户帖子
-	public List<Map<String,Object>> queryUserArticles(String uuid,Integer page){
+	public List<Map<String,Object>> queryUserArticles(Map<String,Object> param){
+		int page=!DataUtil.isEmpty(param.get("page"))?Integer.parseInt(param.get("page").toString()):0;
+		int limit=!DataUtil.isEmpty(param.get("limit"))?Integer.parseInt(param.get("limit").toString())
+				:JSONObject.parseObject(Redis.use().get("user_article_list_config")).getIntValue("size");
+		limit=limit>0?limit:0;
+		String uuid=!DataUtil.isEmpty(param.get("uuid"))?param.get("uuid").toString():null;
 		UserInfo user=userInfoComponent.getUserInfoByUUID(uuid);
-		if(null==user){
-			log.info("用户信息不存在,uuid="+uuid);
-			Result.putValue(ResponseCode.CodeEnum.USER_NOT_EXISTS);
-			return null;
-		}
-		JSONObject json=JSONObject.parseObject(Redis.use().get("user_article_list_config"));
-		Map<String,Object> param=DataUtil.mapOf("userId",user.getId(),"offset",(page-1)*json.getInteger("size")
-				,"limit",json.getInteger("size"),"states",Arrays.asList(ArticleInfo.ARTICLE_STATE_ENUM.DAISHENHE.getState()
-						,ArticleInfo.ARTICLE_STATE_ENUM.TONGGUO.getState(),ArticleInfo.ARTICLE_STATE_ENUM.BUTONGGUO.getState()));
+		List<Integer> states=Arrays.asList(ArticleInfo.ARTICLE_STATE_ENUM.DAISHENHE.getState()
+				,ArticleInfo.ARTICLE_STATE_ENUM.TONGGUO.getState(),ArticleInfo.ARTICLE_STATE_ENUM.BUTONGGUO.getState());
+		param.putAll(DataUtil.mapOf("userId",null!=user?user.getId():null,"offset",(page>0?page-1:0)*limit,"limit",limit,"states",states));
 		List<Map<String,Object>> result=queryArticles(param);
 		UserInfo current=userInfoComponent.attemptLogin();
 		JSONObject share=JSONObject.parseObject(Redis.use().get("article_share_config"));

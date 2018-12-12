@@ -96,7 +96,7 @@ public class BrandCarComponent {
 		}
 		//车辆类型
 		if(StringUtils.isNotEmpty(car.getCategory())){
-			result.put("category", car.getCategory().split(","));
+			result.put("category", car.getCategory());
 		}
 		//车身颜色
 		if(StringUtils.isNotEmpty(car.getColor())){
@@ -137,10 +137,11 @@ public class BrandCarComponent {
 	}
 	
 	//获取精选车型
-	public List<Map<Object,Object>> querySpecialCars(){
+	public List<Map<Object,Object>> querySpecialCars(Integer source){
 		JSONObject json=JSONObject.parseObject(Redis.use().get("special_brand_car_config"));
 		QueryExample example=new QueryExample();
-		example.and().andEqualTo("is_special", Constants.YES).andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState());
+		example.and().andEqualTo("is_special", Constants.YES).andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState())
+			.andEqualTo("source", source);
 		example.setOrderByClause("sort,id");
 		example.setLimit(json.getInteger("size"));
 		List<Map<Object,Object>> result=selectByExample(example).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());
@@ -148,11 +149,16 @@ public class BrandCarComponent {
 	}
 	
 	//获取所有车型
-	public List<Map<Object,Object>> queryAllCars(Integer brandId){
-		QueryExample example=new QueryExample();
-		example.and().andEqualTo("brand_id", brandId).andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState());
-		example.setOrderByClause("sort,id");
-		List<Map<Object,Object>> result=selectByExample(example).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());
+	public List<Map<Object,Object>> queryAllCars(Map<String,Object> param){
+		int page=!DataUtil.isEmpty(param.get("page"))?Integer.parseInt(param.get("page").toString()):0;
+		int limit=!DataUtil.isEmpty(param.get("limit"))?Integer.parseInt(param.get("limit").toString())
+				:JSONObject.parseObject(Redis.use().get("brand_car_list_config")).getIntValue("size");
+		limit=limit>0?limit:0;
+		param.put("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState());
+		param.put("orderBy","sort,id");
+		param.put("offset", (page>0?page-1:0)*limit);
+		param.put("limit", limit);
+		List<Map<Object,Object>> result=selectByParam(param).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());
 		return result;
 	}
 	
@@ -179,11 +185,16 @@ public class BrandCarComponent {
 	//拼装返回结果
 	public Map<Object,Object> joinBrandCarMap(BrandCar c){
 		JSONObject json=JSONObject.parseObject(Redis.use().get("brand_oss_config"));
-		String domain=json.getString("domain")+"/"+json.getString("imgDir")+"/";
 		return DataUtil.mapOf("id",c.getId(),"car",c.getCar(),"price",c.getPrice()+Constants.CAR_PRICE_UNIT
 				,"shopPrice",c.getShopPrice()+Constants.CAR_PRICE_UNIT,"groupPrice",c.getGroupPrice()+Constants.CAR_PRICE_UNIT
 				,"batteryLife",c.getBatteryLife()+Constants.DISTANCE_UNIT,"label",c.getLabel()
-				,"brandId",c.getBrandId(),"icon",StringUtils.isNotEmpty(c.getIcon())?domain+c.getIcon():c.getIcon());
+				,"category",c.getCategory(),"detailImgs", Arrays.asList(c.getDetailImgs().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList())
+				,"paramImgs", Arrays.asList(c.getParamImgs().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList())
+				,"brandId",c.getBrandId(),"icon",OSSUtil.joinOSSFileUrl(c.getIcon(), json)
+				,"banner", Arrays.asList(c.getBanner().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList()));
 	}
 	
 	//获取汽车信息
@@ -220,6 +231,11 @@ public class BrandCarComponent {
 	//获取结果集
 	public List<BrandCar> selectByExample(QueryExample example) {
 		return brandCarMapper.selectByExample(example);
+	}
+	
+	//获取结果集
+	public List<BrandCar> selectByParam(Map<String,Object> param) {
+		return brandCarMapper.selectByParam(param);
 	}
 
 	//更新

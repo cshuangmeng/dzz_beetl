@@ -35,6 +35,8 @@ public class TradeHistoryComponent {
 	private final static Integer CONSUME_TYPE = 1;
 	//充值记录
 	private final static Integer RECHARGE_TYPE = 2;
+	//兑换记录
+	private final static Integer REDEEM_TYPE = 3;
 	
 	//保存交易记录
 	@Transactional
@@ -70,6 +72,8 @@ public class TradeHistoryComponent {
 			}else if(type.equals(RECHARGE_TYPE)){
 				tradeTypes=Arrays.asList(TradeHistory.TRADE_TYPE_ENUM.RECHARGE.getType()
 						,TradeHistory.TRADE_TYPE_ENUM.RECHARGE_GIVE.getType(),TradeHistory.TRADE_TYPE_ENUM.RECHARGE_REFUND.getType());
+			}else if(type.equals(REDEEM_TYPE)){
+				tradeTypes=Arrays.asList(TradeHistory.TRADE_TYPE_ENUM.JFQ_RECHARGE.getType());
 			}
 		}
 		List<Map<Object,Object>> result=queryTradeHistorys(user.getId(),tradeTypes,offset,limit).stream().map(o->{

@@ -54,6 +54,31 @@
 		limit #{offset},#{limit}
 	</if>
   </select>
+  <select id="selectByParam" parameterType="java.util.Map" resultMap="BaseResultMap">
+  	select
+    <if test="null!=param.distinct and param.distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from brand_car t
+    <trim prefix="where" prefixOverrides="and">
+    <if test="null!=param.car and param.car!=''">
+      and t.car like concat('%',#{param.car},'%')
+    </if>
+    <if test="null!=param.state">
+      and t.state=#{param.state}
+    </if>
+    <if test="null!=param.source">
+      and t.source=#{param.source}
+    </if>
+    </trim>
+    <if test="param.orderBy != null">
+      order by ${param.orderBy}
+    </if>
+    <if test="param.limit!=null and param.limit>0">
+		limit #{param.offset},#{param.limit}
+	</if>
+  </select>
   <insert id="insertSelective" parameterType="com.yixiang.api.brand.pojo.BrandCar" useGeneratedKeys="true" keyProperty="id">
     insert into brand_car
     <trim prefix="(" suffix=")" suffixOverrides=",">

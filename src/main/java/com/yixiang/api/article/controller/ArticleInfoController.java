@@ -1,8 +1,11 @@
 package com.yixiang.api.article.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -12,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.article.pojo.ArticleInfo;
 import com.yixiang.api.article.service.ArticleInfoComponent;
 import com.yixiang.api.util.Constants;
+import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.Result;
 
 import io.swagger.annotations.ApiImplicitParam;
@@ -71,12 +76,22 @@ public class ArticleInfoController {
 		return Result.getThreadObject();
 	}
 	
-	//加载用户帖子列表
+	//加载帖子列表
 	@RequestMapping("/list")
-	public Result queryMyArticles(@RequestParam String uuid,@RequestParam(defaultValue="1")Integer page){
-		List<Map<String,Object>> result=articleInfoComponent.queryUserArticles(uuid, page);
+	public Result queryMyArticles(@RequestParam Map<String,Object> param){
+		List<Map<String,Object>> result=articleInfoComponent.queryUserArticles(param);
 		if(Result.noError()){
 			Result.putValue(result);
+		}
+		return Result.getThreadObject();
+	}
+	
+	//文章热门搜索关键字
+	@RequestMapping("/keys")
+	public Result hotKeys(@RequestParam(required=false) String uuid){
+		String keys=Redis.use().get("article_hot_keys");
+		if(StringUtils.isNotEmpty(keys)){
+			Result.putValue(Arrays.asList(keys.split(",")).stream().map(i->DataUtil.mapOf("key",i)).collect(Collectors.toList()));
 		}
 		return Result.getThreadObject();
 	}
