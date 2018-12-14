@@ -20,6 +20,7 @@ public class CouponInfo {
 	private String remark;
 	private Integer state;
 	private Integer tradeId;
+	private Integer typeId;
 	private Date useTime;
 	private Date createTime;
 
@@ -149,6 +150,14 @@ public class CouponInfo {
 
 	public void setTradeId(Integer tradeId) {
 		this.tradeId = tradeId;
+	}
+
+	public Integer getTypeId() {
+		return typeId;
+	}
+
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
 	}
 
 	public Date getUseTime() {

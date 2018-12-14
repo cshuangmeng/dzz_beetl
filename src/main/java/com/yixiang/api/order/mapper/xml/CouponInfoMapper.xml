@@ -18,6 +18,7 @@
     <result column="t_remark" jdbcType="VARCHAR" property="remark" />
     <result column="t_state" jdbcType="INTEGER" property="state" />
     <result column="t_trade_id" jdbcType="INTEGER" property="tradeId" />
+    <result column="t_type_id" jdbcType="INTEGER" property="typeId" />
     <result column="t_use_time" jdbcType="TIMESTAMP" property="useTime" />
     <result column="t_create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
@@ -26,7 +27,7 @@
     t.reduce_type as t_reduce_type, t.amount as t_amount, t.pattern as t_pattern, t.start_time as t_start_time, 
     t.end_time as t_end_time, t.description as t_description, t.cond as t_cond, t.remark as t_remark, 
     t.state as t_state, t.trade_id as t_trade_id, t.use_time as t_use_time, t.create_time as t_create_time,
-    t.code as t_code, t.jfq_uuid as t_jfq_uuid
+    t.code as t_code, t.jfq_uuid as t_jfq_uuid, t.type_id as t_type_id
   </sql>
   <select id="selectByExample" parameterType="com.yixiang.api.util.pojo.QueryExample" resultMap="BaseResultMap">
     select
@@ -96,6 +97,9 @@
       <if test="tradeId != null">
         trade_id,
       </if>
+      <if test="typeId != null">
+        type_id,
+      </if>
       <if test="useTime != null">
         use_time,
       </if>
@@ -148,6 +152,9 @@
       </if>
       <if test="tradeId != null">
         #{tradeId,jdbcType=INTEGER},
+      </if>
+      <if test="typeId != null">
+        #{typeId,jdbcType=INTEGER},
       </if>
       <if test="useTime != null">
         #{useTime,jdbcType=TIMESTAMP},
@@ -210,6 +217,9 @@
       </if>
       <if test="record.tradeId != null">
         t.trade_id = #{record.tradeId,jdbcType=INTEGER},
+      </if>
+      <if test="record.typeId != null">
+        t.type_id = #{record.typeId,jdbcType=INTEGER},
       </if>
       <if test="record.useTime != null">
         t.use_time = #{record.useTime,jdbcType=TIMESTAMP},

@@ -107,9 +107,19 @@ public class OrderInfoComponent {
 			}
 			//计算减免后的应付金额
 			float payPrice=0;
+			Float maxDiscount=null;
+			if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
+				Pattern p=Pattern.compile("((\\d+\\.\\d{0,2})|([1-9]+))");
+				Matcher m=p.matcher(coupon.getDescription());
+				maxDiscount=m.find()?Float.valueOf(m.group(1)):null;
+			}
 			if(coupon.getCategory().equals(CouponInfo.COUPON_CATEGORY_ENUM.CHARGING.getCategory())){
 				if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
-					payPrice=order.getTotalPowerPrice()*coupon.getAmount();
+					if(null!=maxDiscount&&order.getTotalPowerPrice()*(1-coupon.getAmount())>maxDiscount.floatValue()){
+						payPrice=order.getTotalPowerPrice()-maxDiscount;
+					}else{
+						payPrice=order.getTotalPowerPrice()*coupon.getAmount();
+					}
 				}else if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.REDUCE.getType())){
 					payPrice=order.getTotalPowerPrice()-coupon.getAmount();
 				}
@@ -117,7 +127,11 @@ public class OrderInfoComponent {
 				payPrice+=order.getTotalServiceFee();
 			}else if(coupon.getCategory().equals(CouponInfo.COUPON_CATEGORY_ENUM.SERVICEFEE.getCategory())){
 				if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
-					payPrice=order.getTotalServiceFee()*coupon.getAmount();
+					if(null!=maxDiscount&&order.getTotalServiceFee()*(1-coupon.getAmount())>maxDiscount.floatValue()){
+						payPrice=order.getTotalServiceFee()-maxDiscount;
+					}else{
+						payPrice=order.getTotalServiceFee()*coupon.getAmount();
+					}
 				}else if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.REDUCE.getType())){
 					payPrice=order.getTotalServiceFee()-coupon.getAmount();
 				}
@@ -319,6 +333,11 @@ public class OrderInfoComponent {
 					stopCharging(order.getId(),auth);
 				}
 			}
+		}else{//保存失败原因
+			info=new OrderInfo();
+			info.setId(order.getId());
+			info.setChargeState(Result.getThreadObject().getMsg());
+			updateOrderInfo(info);
 		}
 		return result;
 	}
