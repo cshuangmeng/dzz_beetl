@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Range;
@@ -83,22 +81,15 @@ public class CouponInfoComponent {
 		DecimalFormat yuanFormat=new DecimalFormat(config.getString("yuan_pattern"));
 		DecimalFormat zheFormat=new DecimalFormat(config.getString("zhe_pattern"));
 		List<Integer> states=Arrays.asList(CouponInfo.COUPON_STATE_ENUM.NO_USE.getState());
-		Pattern p=Pattern.compile("((\\d+\\.\\d{0,2})|([1-9]+))");
 		List<Map<Object,Object>> dataset=queryUserCoupons(user.getId(), states, null, null).stream()
 				.filter(o->o.getCategory().equals(category)).map(o->{
-			//折扣券最高抵扣金额
-			Float maxDiscount=null;
-			if(o.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
-				Matcher m=p.matcher(o.getDescription());
-				maxDiscount=m.find()?Float.valueOf(m.group(1)):null;
-			}
 			//逐个校验ognl表达式是否通过
 			return DataUtil.mapOf("id",o.getId(),"isAvali",isCouponAvailable(param,o)?1:0
 					,"title",o.getTitle(),"description",o.getDescription(),"reduceType",o.getReduceType(),"category",o.getCategory()
 					,"amount",o.getAmount(),"amountTxt",o.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())
 					?zheFormat.format(o.getAmount()*10):yuanFormat.format(o.getAmount())
 					,"startTime",DateUtil.toString(o.getStartTime(), o.getPattern())
-					,"endTime",DateUtil.toString(o.getEndTime(), o.getPattern()),"maxDiscount",maxDiscount);
+					,"endTime",DateUtil.toString(o.getEndTime(), o.getPattern()),"maxDiscount",o.getMaxDiscount());
 		}).sorted((a,b)->{
 			Integer isAvaliA=Integer.valueOf(a.get("isAvali").toString());
 			Integer isAvaliB=Integer.valueOf(b.get("isAvali").toString());

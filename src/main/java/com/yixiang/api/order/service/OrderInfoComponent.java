@@ -107,12 +107,7 @@ public class OrderInfoComponent {
 			}
 			//计算减免后的应付金额
 			float payPrice=0;
-			Float maxDiscount=null;
-			if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
-				Pattern p=Pattern.compile("((\\d+\\.\\d{0,2})|([1-9]+))");
-				Matcher m=p.matcher(coupon.getDescription());
-				maxDiscount=m.find()?Float.valueOf(m.group(1)):null;
-			}
+			Float maxDiscount=coupon.getMaxDiscount();
 			if(coupon.getCategory().equals(CouponInfo.COUPON_CATEGORY_ENUM.CHARGING.getCategory())){
 				if(coupon.getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
 					if(null!=maxDiscount&&order.getTotalPowerPrice()*(1-coupon.getAmount())>maxDiscount.floatValue()){

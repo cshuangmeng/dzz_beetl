@@ -1,6 +1,8 @@
 package com.yixiang.api.order.pojo;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CouponInfo {
 
@@ -12,6 +14,7 @@ public class CouponInfo {
 	private String code;
 	private String jfqUuid;
 	private Float amount;
+	private Float maxDiscount;
 	private String pattern;
 	private Date startTime;
 	private Date endTime;
@@ -86,6 +89,15 @@ public class CouponInfo {
 
 	public void setAmount(Float amount) {
 		this.amount = amount;
+	}
+
+	public Float getMaxDiscount() {
+		if(getReduceType().equals(CouponInfo.REDUCE_TYPE_ENUM.DISCOUNT.getType())){
+			Pattern p=Pattern.compile("((\\d+\\.\\d{0,2})|([1-9]+))");
+			Matcher m=p.matcher(getDescription());
+			maxDiscount=m.find()?Float.valueOf(m.group(1)):null;
+		}
+		return maxDiscount;
 	}
 
 	public String getPattern() {
