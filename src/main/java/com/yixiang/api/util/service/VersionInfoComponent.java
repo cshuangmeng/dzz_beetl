@@ -44,7 +44,8 @@ public class VersionInfoComponent {
 			log.info("未获取到客户端版本信息,放弃检查,system="+system);
 			return null;
 		}
-		VersionInfo version=getNewestVersionInfo();
+		String platform=system.split("_").length>0?system.split("_")[0]:system;
+		VersionInfo version=getNewestVersionInfo(platform);
 		if(null==version){
 			log.info("暂未配置版本升级信息,放弃检查,version="+version+",system="+system);
 			return null;
@@ -60,9 +61,9 @@ public class VersionInfoComponent {
 	}
 	
 	//获取最新版本信息
-	public VersionInfo getNewestVersionInfo(){
+	public VersionInfo getNewestVersionInfo(String platform){
 		QueryExample example=new QueryExample();
-		example.and().andEqualTo("state", Constants.YES);
+		example.and().andEqualTo("platform", platform).andEqualTo("state", Constants.YES);
 		example.setOrderByClause("create_time desc,id desc");
 		List<VersionInfo> result=selectByExample(example);
 		return result.size()>0?result.get(0):null;

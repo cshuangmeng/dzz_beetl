@@ -8,6 +8,7 @@ public class VersionInfo {
 	private String version;
 	private String title;
 	private String content;
+	private String platform;
 	private String url;
 	private Integer compulsory;
 	private Integer state;
@@ -43,6 +44,14 @@ public class VersionInfo {
 
 	public void setContent(String content) {
 		this.content = content == null ? null : content.trim();
+	}
+
+	public String getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(String platform) {
+		this.platform = platform;
 	}
 
 	public String getUrl() {
