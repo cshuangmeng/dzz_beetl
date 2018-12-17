@@ -6,13 +6,14 @@
     <result column="t_version" jdbcType="VARCHAR" property="version" />
     <result column="t_title" jdbcType="VARCHAR" property="title" />
     <result column="t_content" jdbcType="VARCHAR" property="content" />
+    <result column="t_url" jdbcType="VARCHAR" property="url" />
     <result column="t_compulsory" jdbcType="INTEGER" property="compulsory" />
     <result column="t_state" jdbcType="INTEGER" property="state" />
     <result column="t_create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <sql id="Base_Column_List">
     t.id as t_id, t.version as t_version, t.title as t_title, t.content as t_content, 
-    t.compulsory as t_compulsory, t.state as t_state, t.create_time as t_create_time
+    t.compulsory as t_compulsory, t.state as t_state, t.create_time as t_create_time, t.url as t_url
   </sql>
   <select id="selectByExample" parameterType="com.yixiang.api.util.pojo.QueryExample" resultMap="BaseResultMap">
     select
@@ -40,6 +41,9 @@
       <if test="content != null">
         content,
       </if>
+      <if test="url != null">
+        url,
+      </if>
       <if test="compulsory != null">
         compulsory,
       </if>
@@ -59,6 +63,9 @@
       </if>
       <if test="content != null">
         #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
       </if>
       <if test="compulsory != null">
         #{compulsory,jdbcType=INTEGER},
@@ -88,6 +95,9 @@
       </if>
       <if test="record.content != null">
         t.content = #{record.content,jdbcType=VARCHAR},
+      </if>
+      <if test="record.url != null">
+        t.url = #{record.url,jdbcType=VARCHAR},
       </if>
       <if test="record.compulsory != null">
         t.compulsory = #{record.compulsory,jdbcType=INTEGER},

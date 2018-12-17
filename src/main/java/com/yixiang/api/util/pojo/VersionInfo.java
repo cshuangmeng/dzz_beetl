@@ -8,6 +8,7 @@ public class VersionInfo {
 	private String version;
 	private String title;
 	private String content;
+	private String url;
 	private Integer compulsory;
 	private Integer state;
 	private Date createTime;
@@ -42,6 +43,14 @@ public class VersionInfo {
 
 	public void setContent(String content) {
 		this.content = content == null ? null : content.trim();
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public Integer getCompulsory() {
