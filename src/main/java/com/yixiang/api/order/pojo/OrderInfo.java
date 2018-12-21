@@ -336,7 +336,7 @@ public class OrderInfo {
 	public static final List<Integer> IN_PROGRESS_STATES = Arrays.asList(ORDER_STATE_ENUM.CHARGING.getState(),
 			ORDER_STATE_ENUM.SETTLEMENT.getState(), ORDER_STATE_ENUM.NO_PAY.getState(), ORDER_STATE_ENUM.PENDING.getState());
 	// 已完成的订单状态
-	public static final List<Integer> END_CHARGING__STATES = Arrays.asList(ORDER_STATE_ENUM.NO_EVALUATE.getState(),
+	public static final List<Integer> END_CHARGING_STATES = Arrays.asList(ORDER_STATE_ENUM.NO_EVALUATE.getState(),
 			ORDER_STATE_ENUM.COMPLETED.getState());
 
 }

@@ -74,11 +74,10 @@ public class OrderInfoComponent {
 	
 	//用户支付充电费用
 	@Transactional
-	public Map<String,Object> pay(Integer orderId,Float price,Integer couponId){
+	public Map<String,Object> pay(Integer orderId,Float price,Integer couponId,boolean auth){
 		//锁定用户账户
 		UserInfo user=ThreadCache.getCurrentUserInfo();
 		Map<String,Object> param=ThreadCache.getHttpData();
-		user=userInfoComponent.getUserInfo(user.getId(), true);
 		//检查订单是否可操作
 		OrderInfo order=getOrderInfo(orderId, true);
 		if(null==order){
@@ -86,10 +85,16 @@ public class OrderInfoComponent {
 			Result.putValue(ResponseCode.CodeEnum.ORDER_NOT_EXISTS);
 			return null;
 		}
-		if(!user.getId().equals(order.getUserId())){
-			log.info("不能操作非本人订单,orderId="+order.getId()+",login.userId="+user.getId()+",order.userId="+order.getUserId());
-			Result.putValue(ResponseCode.CodeEnum.ORDER_NOT_MINE);
-			return null;
+		if(auth){
+			user=userInfoComponent.getUserInfo(user.getId(), true);
+			if(!user.getId().equals(order.getUserId())){
+				log.info("不能操作非本人订单,orderId="+order.getId()+",login.userId="+user.getId()+",order.userId="+order.getUserId());
+				Result.putValue(ResponseCode.CodeEnum.ORDER_NOT_MINE);
+				return null;
+			}
+		}else{
+			user=userInfoComponent.getUserInfo(order.getUserId(), true);
+			price=order.getTotalPrice();
 		}
 		if(!order.getState().equals(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState())){
 			log.info("订单在此状态下不支持支付,orderId="+order.getId()+",state="+order.getState());
@@ -257,8 +262,8 @@ public class OrderInfoComponent {
 		orderInfoMapper.insertSelective(order);
 		//启动调度任务
 		JobDataMap jobData=JobDataMapSupport.newJobDataMap(DataUtil.mapOf("orderId",String.valueOf(order.getId())));
-		JobDetail job = JobBuilder.newJob(CheckChargingStateJob.class).withIdentity(Constants.QUARTZ_JOB_PREFIX+order.getId()
-			, Constants.QUARTZ_GROUP_PREFIX+order.getId()).usingJobData(jobData).build();
+		JobDetail job = JobBuilder.newJob(CheckChargingStateJob.class).withIdentity(Constants.STATE_JOB_PREFIX+order.getId()
+			, Constants.STATE_GROUP_PREFIX+order.getId()).usingJobData(jobData).build();
 		taskService.updateCron(job, String.format(Redis.use().get("charge_state_cron"), DateUtil.getSecond(order.getCreateTime())));
 		return DataUtil.mapOf("orderId",order.getId(),"timeout",Integer.valueOf(Redis.use().get("order_charge_timeout"))
 				,"retry",Redis.use().get("order_charge_retry"),"unit",Redis.use().get("order_charge_unit"));
@@ -397,7 +402,7 @@ public class OrderInfoComponent {
 		}
 		//账单已同步
 		if(order.getState().equals(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState())
-				||OrderInfo.END_CHARGING__STATES.contains(order.getState())){
+				||OrderInfo.END_CHARGING_STATES.contains(order.getState())){
 			return order;
 		}else{//账单未同步
 			OrderInfo info=getChargingBill(order.getBillId());
@@ -442,7 +447,7 @@ public class OrderInfoComponent {
 		if(states.contains(order.getState())){
 			info.setState(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState());
 			//取消调度任务
-			taskService.deleteJob(Constants.QUARTZ_JOB_PREFIX+order.getId(), Constants.QUARTZ_GROUP_PREFIX+order.getId());
+			taskService.deleteJob(Constants.STATE_JOB_PREFIX+order.getId(), Constants.STATE_GROUP_PREFIX+order.getId());
 		}
 		info.setId(order.getId());
 		updateOrderInfo(info);
@@ -456,7 +461,7 @@ public class OrderInfoComponent {
 		if(StringUtils.isNotEmpty(state)){
 			states=Arrays.asList(state.split(",")).stream().map(o->Integer.valueOf(o)).collect(Collectors.toList());
 		}else{
-			states=OrderInfo.END_CHARGING__STATES;
+			states=OrderInfo.END_CHARGING_STATES;
 		}
 		Integer limit=JSONObject.parseObject(Redis.use().get("user_order_list_config")).getInteger("size");
 		Integer offset=(page>0?page-1:0)*limit;
@@ -581,7 +586,7 @@ public class OrderInfoComponent {
 		}
 		//取消调度任务
 		for(OrderInfo o:orders){
-			taskService.deleteJob(Constants.QUARTZ_JOB_PREFIX+o.getId(), Constants.QUARTZ_GROUP_PREFIX+o.getId());
+			taskService.deleteJob(Constants.STATE_JOB_PREFIX+o.getId(), Constants.STATE_GROUP_PREFIX+o.getId());
 		}
 	}
 	
@@ -613,6 +618,11 @@ public class OrderInfoComponent {
 			return result.size()>0?result.get(0):null;
 		}
 		return null;
+	}
+	
+	//查询订单
+	public List<OrderInfo> selectByExample(QueryExample example){
+		return orderInfoMapper.selectByExample(example);
 	}
 	
 	//查询订单

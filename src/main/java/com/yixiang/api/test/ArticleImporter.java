@@ -52,7 +52,9 @@ import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.PayClientBuilder;
 import com.yixiang.api.util.mapper.UtilMapper;
+import com.yixiang.api.util.pojo.AreaInfo;
 import com.yixiang.api.util.pojo.QueryExample;
+import com.yixiang.api.util.service.AreaInfoComponent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -74,6 +76,8 @@ public class ArticleImporter {
 	private ChargeClientBuilder chargeClientBuilder;
 	@Autowired
 	private RechargeInfoComponent rechargeInfoComponent;
+	@Autowired
+	private AreaInfoComponent areaInfoComponent;
 	
 	@Test
 	public void test1()throws Exception{
@@ -84,8 +88,8 @@ public class ArticleImporter {
 		//readChargingStation();
 		//updateChargingStation();
 		//updateChargingStation1();
-		//updateLngLatToAutonavi();
-		updateChargingStation2();
+		updateLngLatToAutonavi();
+		//updateChargingStation2();
 	}
 	
 	public void updateChargingStation2(){
@@ -114,21 +118,33 @@ public class ArticleImporter {
 	
 	public void updateLngLatToAutonavi(){
 		QueryExample example=new QueryExample();
-		example.and().andGreaterThan("id", 12477);
+		example.and().andGreaterThan("create_time", "2018-12-20");
 		List<ChargingStation> stations=chargingStationComponent.selectByExample(example);
 		ChargingStation update=null;
 		JSONObject json=null;
-		String url="http://restapi.amap.com/v3/assistant/coordinate/convert";
-		Map<String,String> queryParas=ParaMap.create("key", "bb1ab2aa10af0e61619d7c1a5a349e82").put("coordsys", "baidu").getData();
+		String url="http://api.map.baidu.com/geocoder/v2/";
+		Map<String,String> queryParas=ParaMap.create("ak", "Yw2f6FG6SOcq0MoBfeuG0rihcaFNQkBE").put("output", "json").put("pois", "0").getData();
 		for(ChargingStation station:stations){
-			queryParas.put("locations", station.getLng()+","+station.getLat());
+			queryParas.put("location", station.getLat()+","+station.getLng());
 	        json=JSONObject.parseObject(HttpUtils.get(url, queryParas));
-	        if(json.getString("info").equalsIgnoreCase("ok")){
+	        if(json.getString("status").equalsIgnoreCase("0")){
 	        	update=new ChargingStation();
 	        	update.setId(station.getId());
-	        	update.setLng(new BigDecimal(json.getString("locations").split(",")[0]));
-	        	update.setLat(new BigDecimal(json.getString("locations").split(",")[1]));
-	        	chargingStationComponent.updateChargingStation(update);
+	        	AreaInfo area=areaInfoComponent.queryAreaInfoByAreaCode(json.getJSONObject("result").getJSONObject("addressComponent").getInteger("adcode"));
+				if(null!=area){
+					update.setAreaId(area.getId());
+					chargingStationComponent.updateChargingStation(update);
+				}
+				/*
+				example.clear();
+				example.and().andEqualTo("area_name", json.getJSONObject("result").getJSONObject("addressComponent").getString("city"));
+				example.setOrderByClause("parent_id desc");
+				List<AreaInfo> areas=areaInfoMapper.selectByExample(example);
+				if(null!=areas&&areas.size()>0){
+					update.setAreaId(areas.get(0).getId());
+					chargingStationComponent.updateChargingStation(update);
+				}
+				*/
 	        }
 		}
 	}

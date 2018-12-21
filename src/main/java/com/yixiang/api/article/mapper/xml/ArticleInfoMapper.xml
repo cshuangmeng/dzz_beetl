@@ -52,8 +52,8 @@
   <!-- 加载品牌文章列表 -->
   <select id="queryArticles" resultType="map">
   	select t1.id carId,t1.car carName,t1.icon carIcon,t1.price carPrice,t.uuid,t.title,t2.user_name userName,t2.head_img headImg
-  	,t.icon,t.share_icon shareIcon,t.comments,t.praises,t.visitors,t.create_time createTime,t.category,t.title,t.content,t.source from article_info t 
-  	inner join brand_car t1 on (t.car_id=t1.id) left join user_info t2 on (t.user_id=t2.id) 
+  	,t.icon,t.share_icon shareIcon,t.comments,t.praises,t.visitors,t.create_time createTime,t.category,t.title,t.content,t.source,t.media
+  	from article_info t inner join brand_car t1 on (t.car_id=t1.id) left join user_info t2 on (t.user_id=t2.id) 
   	<trim prefix="where" prefixOverrides="and">
   		<if test="null!=param.brandId">
   			and t1.brand_id=#{param.brandId}

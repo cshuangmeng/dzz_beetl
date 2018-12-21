@@ -65,7 +65,7 @@ public class ChargerImporter {
 	
 	@Test
 	public void test(){
-		test10();
+		test6();
 	}
 	
 	//更新品牌车型中的价格
@@ -113,7 +113,7 @@ public class ChargerImporter {
 	//写入充电桩信息至文件,待后续入库操作
 	public void test5(){
 		try {
-			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/易享充电/jnc_data.txt"),Constants.UTF8));
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.txt"),Constants.UTF8));
 			Integer pageSize=10;
 			Integer pageNo=1;
 			boolean run=true;
@@ -133,8 +133,8 @@ public class ChargerImporter {
 	//读取桩信息
 	public void test9(){
 		try {
-			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/易享充电/jnc_data.txt"),Constants.UTF8));
-			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/易享充电/jnc_zhuang.txt"),Constants.UTF8));
+			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.txt"),Constants.UTF8));
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.txt"),Constants.UTF8));
 			String row=null;
 			JSONObject json=null;
 			while((row=reader.readLine())!=null){
@@ -159,7 +159,7 @@ public class ChargerImporter {
 	//读取桩信息
 	public void test10(){
 		try {
-			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/易享充电/jnc_zhuang.txt"),Constants.UTF8));
+			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.txt"),Constants.UTF8));
 			String row=null;
 			JSONObject json=null;
 			int i=0;
@@ -178,8 +178,8 @@ public class ChargerImporter {
 	//从文件读取充电桩信息,组装sql文件
 	public void test6(){
 		try {
-			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/易享充电/jnc_data.txt"),Constants.UTF8));
-			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/易享充电/jnc_data.sql"),Constants.UTF8));
+			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.txt"),Constants.UTF8));
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.sql"),Constants.UTF8));
 			String row=null;
 			JSONObject json=null;
 			while((row=reader.readLine())!=null){
@@ -189,7 +189,7 @@ public class ChargerImporter {
 				for(int i=0;i<array.size();i++){
 					JSONObject station=array.getJSONObject(i);
 					//拼装充电站信息
-					String sql="insert into charging_station(uuid,station_id,area_code,source,construction,support_order,match_cars"
+					String sql="insert into tmp_charging_station(uuid,station_id,area_code,source,construction,support_order,match_cars"
 							+ ",telephone,service_phone,provider_id,provider,pay_way,electricity_price,lat,lng,title,address"
 							+ ",site_guide,open_time,parking_price,park_nums,park_info,detail_imgs,service_fee,remark,state,create_time)values("
 							+ "'"+DataUtil.buildUUID()+"','"+empty(station.getString("StationID"))+"','"+empty(station.getString("AreaCode"))+"'"
@@ -207,7 +207,7 @@ public class ChargerImporter {
 					JSONArray equipments=station.getJSONArray("EquipmentInfos");
 					for(int j=0;j<equipments.size();j++){
 						JSONObject equipment=equipments.getJSONObject(j);
-						sql="insert into equipment_info(station_id,equipment_id,manufacture_id,manufacture_name,equipment_name,equipment_model"
+						sql="insert into tmp_equipment_info(station_id,equipment_id,manufacture_id,manufacture_name,equipment_name,equipment_model"
 								+ ",production_date,equipment_type,lat,lng,power)values("
 								+ "'"+empty(station.getString("StationID"))+"','"+empty(equipment.getString("EquipmentID"))+"','"+empty(equipment.getString("ManufacturerID"))
 								+"','"+empty(equipment.getString("ManufacturerName"))+"','"+empty(equipment.getString("EquipmentName"))
@@ -220,7 +220,7 @@ public class ChargerImporter {
 						JSONArray connectors=equipment.getJSONArray("ConnectorInfos");
 						for(int k=0;k<connectors.size();k++){
 							JSONObject connector=connectors.getJSONObject(k);
-							sql="insert into connector_info(station_id,equipment_id,connector_id,connector_name,connector_type,voltage_upper,voltage_lower"
+							sql="insert into tmp_connector_info(station_id,equipment_id,connector_id,connector_name,connector_type,voltage_upper,voltage_lower"
 									+ ",power,current,park_no,national_standard)values("
 									+ "'"+empty(station.getString("StationID"))+"','"+empty(equipment.getString("EquipmentID"))+"','"+empty(connector.getString("ConnectorID"))
 									+"','"+empty(connector.getString("ConnectorName"))+"','"+empty(connector.getString("ConnectorType"))

@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.brand.mapper.BrandCarMapper;
 import com.yixiang.api.brand.pojo.BrandCar;
+import com.yixiang.api.brand.pojo.BrandInfo;
 import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.OSSUtil;
@@ -88,30 +89,6 @@ public class BrandCarComponent {
 			return null;
 		}
 		Map<Object,Object> result=joinBrandCarMap(car);
-		//banner
-		JSONObject oss=JSONObject.parseObject(Redis.use().get("brand_oss_config"));
-		if(StringUtils.isNotEmpty(car.getBanner())){
-			result.put("banner", Arrays.asList(car.getBanner().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, oss))).collect(Collectors.toList()));
-		}
-		//车辆类型
-		if(StringUtils.isNotEmpty(car.getCategory())){
-			result.put("category", car.getCategory());
-		}
-		//车身颜色
-		if(StringUtils.isNotEmpty(car.getColor())){
-			result.put("color", car.getColor().split(","));
-		}
-		//车辆详情
-		if(StringUtils.isNotEmpty(car.getDetailImgs())){
-			result.put("detailImgs", Arrays.asList(car.getDetailImgs().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, oss))).collect(Collectors.toList()));
-		}
-		//车型参数
-		if(StringUtils.isNotEmpty(car.getParamImgs())){
-			result.put("paramImgs", Arrays.asList(car.getParamImgs().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, oss))).collect(Collectors.toList()));
-		}
 		//分享配置
 		JSONObject share=JSONObject.parseObject(Redis.use().get("share_config"));
 		if(share.containsKey("brand_car_share")){
@@ -185,16 +162,18 @@ public class BrandCarComponent {
 	//拼装返回结果
 	public Map<Object,Object> joinBrandCarMap(BrandCar c){
 		JSONObject json=JSONObject.parseObject(Redis.use().get("brand_oss_config"));
+		BrandInfo brand=brandInfoComponent.getBrandInfo(c.getBrandId());
 		return DataUtil.mapOf("id",c.getId(),"car",c.getCar(),"price",c.getPrice()+Constants.CAR_PRICE_UNIT
 				,"shopPrice",c.getShopPrice()+Constants.CAR_PRICE_UNIT,"groupPrice",c.getGroupPrice()+Constants.CAR_PRICE_UNIT
-				,"batteryLife",c.getBatteryLife()+Constants.DISTANCE_UNIT,"label",c.getLabel()
-				,"category",c.getCategory(),"detailImgs", Arrays.asList(c.getDetailImgs().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList())
-				,"paramImgs", Arrays.asList(c.getParamImgs().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList())
-				,"brandId",c.getBrandId(),"icon",OSSUtil.joinOSSFileUrl(c.getIcon(), json)
-				,"banner", Arrays.asList(c.getBanner().split(",")).stream()
-					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList()));
+				,"batteryLife",c.getBatteryLife()+Constants.DISTANCE_UNIT,"label",c.getLabel(),"brand",brand.getBrand()
+				,"category",c.getCategory(),"color", StringUtils.isNotEmpty(c.getColor())?c.getColor().split(","):null,"brandId",c.getBrandId()
+				,"detailImgs", StringUtils.isNotEmpty(c.getDetailImgs())?Arrays.asList(c.getDetailImgs().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList()):null
+				,"paramImgs", StringUtils.isNotEmpty(c.getParamImgs())?Arrays.asList(c.getParamImgs().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList()):null
+				,"icon",StringUtils.isNotEmpty(c.getIcon())?OSSUtil.joinOSSFileUrl(c.getIcon(), json):null
+				,"banner", StringUtils.isNotEmpty(c.getBanner())?Arrays.asList(c.getBanner().split(",")).stream()
+					.map(o->DataUtil.mapOf("img",OSSUtil.joinOSSFileUrl(o, json))).collect(Collectors.toList()):null);
 	}
 	
 	//获取汽车信息

@@ -339,6 +339,17 @@ public class CouponInfoComponent {
 		return null;
 	}
 	
+	//获取用户的可用优惠券数量
+	public long getUserEnableCouponAmount(Integer uesrId){
+		if(null!=uesrId&&uesrId>0){
+			QueryExample example=new QueryExample();
+			example.and().andEqualTo("user_id", uesrId).andEqualTo("state", CouponInfo.COUPON_STATE_ENUM.NO_USE.getState())
+				.andGreaterThan("end_time", new Date());
+			return couponInfoMapper.countByExample(example);
+		}
+		return 0;
+	}
+	
 	//通过兑换码获取优惠券
 	public CouponInfo getCouponInfoByCode(String code){
 		if(StringUtils.isNotEmpty(code)){

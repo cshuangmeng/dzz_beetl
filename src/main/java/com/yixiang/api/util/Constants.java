@@ -39,9 +39,13 @@ public class Constants {
 	// 操作失败
 	public static final String FAIL = "FAIL";
 	// 充电状态检查调度任务名称前缀
-	public static final String QUARTZ_JOB_PREFIX = "check_charging_state_job_";
+	public static final String STATE_JOB_PREFIX = "check_charging_state_job_";
 	// 充电状态检查调度任务组前缀
-	public static final String QUARTZ_GROUP_PREFIX = "check_charging_state_group_";
+	public static final String STATE_GROUP_PREFIX = "check_charging_state_group_";
+	// 自动扣款检查调度任务名称前缀
+	public static final String PAY_JOB_PREFIX = "pay_charging_order_job";
+	// 自动扣款检查调度任务组前缀
+	public static final String PAY_GROUP_PREFIX = "pay_charging_order_group";
 	// 行驶距离单位
 	public static final String DISTANCE_UNIT = "公里";
 	// 车价单位

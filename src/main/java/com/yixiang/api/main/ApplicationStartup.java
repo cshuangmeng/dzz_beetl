@@ -1,5 +1,7 @@
 package com.yixiang.api.main;
 
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -13,13 +15,16 @@ import com.jfinal.weixin.sdk.api.ApiConfigKit;
 import com.jfinal.weixin.sdk.cache.RedisAccessTokenCache;
 import com.jfinal.wxaapp.WxaConfig;
 import com.jfinal.wxaapp.WxaConfigKit;
+import com.yixiang.api.quartz.PayChargingOrderJob;
+import com.yixiang.api.quartz.TaskService;
+import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.PropertiesUtil;
 
-@Component()
+@Component
 public class ApplicationStartup implements ApplicationListener<ContextRefreshedEvent> {
 	
 	Logger log=LoggerFactory.getLogger(getClass());
-
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		try {
@@ -46,6 +51,9 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
 						, Integer.valueOf(PropertiesUtil.getProperty("redis.port")), PropertiesUtil.getProperty("redis.pwd"));
 				rp.start();
 				ApiConfigKit.setAccessTokenCache(new RedisAccessTokenCache());
+				//启动自动扣款调度任务
+				JobDetail job = JobBuilder.newJob(PayChargingOrderJob.class).withIdentity(Constants.PAY_JOB_PREFIX, Constants.PAY_GROUP_PREFIX).build();
+				event.getApplicationContext().getBean(TaskService.class).updateCron(job, Redis.use().get("auto_pay_cron"));
 				log.info("Application inited!");
 			}
 		} catch (Exception e) {

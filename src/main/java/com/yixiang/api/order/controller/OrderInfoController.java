@@ -31,7 +31,7 @@ public class OrderInfoController {
 	//订单支付
 	@RequestMapping("/pay")
 	public Result pay(@RequestParam Integer orderId,@RequestParam Float price,@RequestParam(required=false)Integer couponId){
-		Map<String,Object> result=orderInfoComponent.pay(orderId, price, couponId);
+		Map<String,Object> result=orderInfoComponent.pay(orderId, price, couponId, true);
 		if(Result.noError()){
 			Result.putValue(result);
 		}

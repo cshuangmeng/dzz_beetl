@@ -141,6 +141,8 @@ public class UserInfoComponent {
 		result.put("kf_phone", Redis.use().get("kf_phone"));
 		//会员特权介绍页
 		result.put("vipPrivilege", Redis.use().get("vip_privilege_h5"));
+		//优惠券数量
+		result.put("couponAmount", couponInfoComponent.getUserEnableCouponAmount(user.getId()));
 		return result;
 	}
 	

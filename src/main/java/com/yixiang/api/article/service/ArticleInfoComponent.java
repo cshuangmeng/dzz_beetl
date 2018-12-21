@@ -20,6 +20,7 @@ import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.article.mapper.ArticleInfoMapper;
 import com.yixiang.api.article.pojo.ArticleInfo;
 import com.yixiang.api.article.pojo.ArticlePraise;
+import com.yixiang.api.brand.pojo.BrandCar;
 import com.yixiang.api.brand.service.BrandCarComponent;
 import com.yixiang.api.coin.service.CoinHistoryComponent;
 import com.yixiang.api.user.pojo.UserInfo;
@@ -136,7 +137,8 @@ public class ArticleInfoComponent {
 		addVisitors(article.getId(), 1);
 		//记录浏览日志
 		browseLogComponent.saveBrowseLog(BrowseLog.CATEGORY_TYPE_ENUM.ARTICLE.getCategory(), article.getId());
-		return DataUtil.mapOf("article",articleMap,"user",userMap,"car",brandCarComponent.getBrandCarDetail(article.getCarId()),"shareMap",shareMap);
+		BrandCar car=brandCarComponent.getBrandCar(article.getCarId());
+		return DataUtil.mapOf("article",articleMap,"user",userMap,"shareMap",shareMap,"car",null!=car?brandCarComponent.joinBrandCarMap(car):null);
 	}
 	
 	//加载用户帖子
@@ -152,7 +154,6 @@ public class ArticleInfoComponent {
 		param.putAll(DataUtil.mapOf("userId",null!=user?user.getId():null,"offset",(page>0?page-1:0)*limit,"limit",limit,"states",states));
 		List<Map<String,Object>> result=queryArticles(param);
 		UserInfo current=userInfoComponent.attemptLogin();
-		JSONObject share=JSONObject.parseObject(Redis.use().get("article_share_config"));
 		result.stream().forEach(r->{
 			//是否已点赞
 			Integer isPraise=0;
@@ -162,20 +163,6 @@ public class ArticleInfoComponent {
 				isPraise=null!=praise&&praise.getState().equals(Constants.YES)?1:0;
 				r.put("isPraise", isPraise);
 			}
-			//组装分享配置
-			String title=!DataUtil.isEmpty(r.get("title"))?r.get("title").toString():"";
-			String content=!DataUtil.isEmpty(r.get("content"))?r.get("content").toString():"";
-			String icon=!DataUtil.isEmpty(r.get("icon"))?r.get("icon").toString():"";
-			Integer source=Integer.valueOf(r.get("source").toString());
-			Map<String,Object> shareMap=DataUtil.mapOf("title",title.length()>share.getIntValue("title_length")
-					?title.substring(0, share.getIntValue("title_length")):title,"content"
-					,content.length()>share.getIntValue("desc_length")?content.substring(0, share.getIntValue("desc_length"))
-					:content,"img",icon,"url",source.equals(ArticleInfo.ARTICLE_SOURCE_ENUM.SYSTEM.getSource())
-					?share.getString("system_article_h5"):share.getString("personal_article_h5")+r.get("uuid"));
-			if(DataUtil.isEmpty(shareMap.get("title"))){
-				shareMap.put("title", shareMap.get("content"));
-			}
-			r.put("shareMap", shareMap);
 		});
 		return result;
 	}
@@ -255,23 +242,23 @@ public class ArticleInfoComponent {
 	
 	//依据条件查询文章
 	public List<Map<String,Object>> queryArticles(Map<String,Object> param){
-		JSONObject json=JSONObject.parseObject(Redis.use().get("article_oss_config"));
-		String articleDomain=json.getString("domain")+"/"+json.getString("imgDir")+"/";
-		json=JSONObject.parseObject(Redis.use().get("brand_oss_config"));
-		String brandDomain=json.getString("domain")+"/"+json.getString("imgDir")+"/";
-		json=JSONObject.parseObject(Redis.use().get("user_oss_config"));
-		String userDomain=json.getString("domain")+"/"+json.getString("imgDir")+"/";
+		JSONObject articleDomain=JSONObject.parseObject(Redis.use().get("article_oss_config"));
+		JSONObject brandDomain=JSONObject.parseObject(Redis.use().get("brand_oss_config"));
+		JSONObject userDomain=JSONObject.parseObject(Redis.use().get("user_oss_config"));
 		List<Map<String,Object>> result=articleInfoMapper.queryArticles(param);
 		JSONObject shareJson=JSONObject.parseObject(Redis.use().get("article_share_config"));
 		result.stream().forEach(a->{
 			if(Validator.isNotNullOrEmpty(a.get("carIcon"))){
-				a.put("carIcon", brandDomain+a.get("carIcon"));
+				a.put("carIcon", OSSUtil.joinOSSFileUrl(a.get("carIcon").toString(), brandDomain));
 			}
 			if(Validator.isNotNullOrEmpty(a.get("icon"))){
-				a.put("icon", articleDomain+a.get("icon"));
+				a.put("icon", OSSUtil.joinOSSFileUrl(a.get("icon").toString(), articleDomain));
+			}
+			if(Validator.isNotNullOrEmpty(a.get("media"))){
+				a.put("media", OSSUtil.joinOSSFileUrl(articleDomain, a.get("media").toString().split(",")));
 			}
 			if(Validator.isNotNullOrEmpty(a.get("headImg"))){
-				a.put("headImg", userDomain+a.get("headImg"));
+				a.put("headImg", OSSUtil.joinOSSFileUrl(a.get("headImg").toString(), userDomain));
 			}
 			a.put("createTime", DataUtil.getTimeFormatText((Date)a.get("createTime")));
 			a.put("carPrice", !DataUtil.isEmpty(a.get("carPrice"))?a.get("carPrice").toString()+Constants.CAR_PRICE_UNIT:a.get("carPrice"));
