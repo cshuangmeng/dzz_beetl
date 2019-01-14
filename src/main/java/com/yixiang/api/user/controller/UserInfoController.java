@@ -69,6 +69,16 @@ public class UserInfoController {
 		return Result.getThreadObject();
 	}
 	
+	//用户信息配置
+	@RequestMapping("/config")
+	public Result config(){
+		Map<String,Object> result=userInfoComponent.getUserInfoConfig();
+		if(Result.noError()){
+			Result.putValue(result);
+		}
+		return Result.getThreadObject();
+	}
+	
 	//用户主页信息
 	@RequestMapping("/home")
 	public Result home(){

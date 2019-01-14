@@ -119,6 +119,11 @@ public class UserInfoComponent {
 		return result;
 	}
 	
+	//用户信息配置
+	public Map<String,Object> getUserInfoConfig(){
+		return DataUtil.mapOf("rewardTip",Redis.use().get("add_charger_reward_tip"));
+	}
+	
 	//用户主页
 	public Map<String,Object> getUserHomeData(){
 		UserInfo user=(UserInfo)ThreadCache.getData(Constants.USER);

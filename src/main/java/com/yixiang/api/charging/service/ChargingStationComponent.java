@@ -196,7 +196,8 @@ public class ChargingStationComponent {
 				,"lng",lng.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
 				,"lat",lat.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
 				,"state",ChargingStation.STATION_STATE_ENUM.ENABLED.getState()
-				,"userStation",userStation,"offset",(page-1)*json.getInteger("size"),"limit",json.getInteger("size")));
+				,"userStation",userStation,"offset",(page-1)*json.getInteger(isActive?"list_size":"home_size")
+				,"limit",json.getInteger(isActive?"list_size":"home_size")));
 		//组织返回结果
 		json=JSONObject.parseObject(Redis.use().get("charging_oss_config"));
 		String domain=json.getString("domain")+"/"+json.getString("imgDir")+"/";

@@ -85,11 +85,12 @@ public class MessageHistoryComponent {
 			map.put("content", history.getContent());
 			map.put("contentType", history.getContentType());
 			map.put("source", history.getSource());
+			map.put("fullTime", history.getCreateTime());
 			map.put("createTime", DateUtil.toString(history.getCreateTime(), DatePattern.COMMON_DATE_AND_TIME_WITHOUT_YEAR_AND_SECOND));
 			map.put("media", OSSUtil.joinOSSFileUrl(json, history.getMedia().split(",")));
 			list.add(map);
 		}
-		result.sort((a,b)->b.get(0).get("createTime").toString().compareTo(a.get(0).get("createTime").toString()));
+		result.sort((a,b)->((Date)b.get(0).get("fullTime")).compareTo((Date)a.get(0).get("fullTime")));
 		return result;
 	}
 	

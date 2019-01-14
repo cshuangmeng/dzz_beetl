@@ -254,9 +254,7 @@ public class ArticleInfoComponent {
 			if(Validator.isNotNullOrEmpty(a.get("icon"))){
 				a.put("icon", OSSUtil.joinOSSFileUrl(a.get("icon").toString(), articleDomain));
 			}
-			if(Validator.isNotNullOrEmpty(a.get("media"))){
-				a.put("media", OSSUtil.joinOSSFileUrl(articleDomain, a.get("media").toString().split(",")));
-			}
+			a.put("media", Validator.isNotNullOrEmpty(a.get("media"))?OSSUtil.joinOSSFileUrl(articleDomain, a.get("media").toString().split(",")):null);
 			if(Validator.isNotNullOrEmpty(a.get("headImg"))){
 				a.put("headImg", OSSUtil.joinOSSFileUrl(a.get("headImg").toString(), userDomain));
 			}

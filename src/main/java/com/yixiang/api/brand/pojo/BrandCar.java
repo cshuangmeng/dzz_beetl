@@ -29,6 +29,7 @@ public class BrandCar {
 	private Integer label;
 	private String remark;
 	private Date createTime;
+	private Date topTime;
 
 	public Integer getId() {
 		return id;
@@ -228,6 +229,14 @@ public class BrandCar {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
+	}
+
+	public Date getTopTime() {
+		return topTime;
+	}
+
+	public void setTopTime(Date topTime) {
+		this.topTime = topTime;
 	}
 
 	// 状态

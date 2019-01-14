@@ -155,6 +155,9 @@ public class RechargeInfoComponent {
 			Result.putValue(ResponseCode.CodeEnum.BALANCE_NOT_ENOUGH);
 			return null;
 		}
+		//清空账户余额
+		user.setBalance(new BigDecimal(jfqPrice));
+		userInfoComponent.updateUserInfo(user);
 		//保存退款记录
 		Integer orderType=RefundSummary.ORDER_TYPE_ENUM.RECHARGE.getType();
 		Integer tradeType=TradeHistory.TRADE_TYPE_ENUM.RECHARGE_REFUND.getType();
@@ -189,9 +192,6 @@ public class RechargeInfoComponent {
 				break;
 			}
 		}
-		//清空账户余额
-		user.setBalance(new BigDecimal(jfqPrice));
-		userInfoComponent.updateUserInfo(user);
 		JSONObject json=JSONObject.parseObject(Redis.use().get("refund_submit_remind"));
 		return DataUtil.mapOf("desc",String.format(json.getString("remind")
 				, DateUtil.toString(new Date(), json.getString("remind_date_pattern"))));

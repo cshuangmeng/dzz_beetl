@@ -79,7 +79,7 @@
   	</trim>
   	<choose>
   		<when test="null!=param.orderBy">
-  			order by #{param.orderBy}
+  			order by ${param.orderBy}
   		</when>
   		<otherwise>
   			order by t.top_time desc,t.create_time desc

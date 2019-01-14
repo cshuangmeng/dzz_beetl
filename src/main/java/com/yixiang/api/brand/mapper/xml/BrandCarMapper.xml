@@ -27,6 +27,7 @@
     <result column="t_label" jdbcType="INTEGER" property="label" />
     <result column="t_remark" jdbcType="VARCHAR" property="remark" />
     <result column="t_create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="t_top_time" jdbcType="TIMESTAMP" property="topTime" />
   </resultMap>
   <sql id="Base_Column_List">
     t.id as t_id, t.sid as t_sid, t.car_type as t_car_type, t.source as t_source, t.fuel_type as t_fuel_type, 
@@ -35,7 +36,7 @@
     t.icon as t_icon, t.banner as t_banner, t.detail_imgs as t_detail_imgs, t.param_imgs as t_param_imgs, 
     t.is_special as t_is_special, t.sort as t_sort, t.state as t_state, t.label as t_label, 
     t.create_time as t_create_time,t.area_id as t_area_id,t.address as t_address,
-    t.shop_price as t_shop_price,t.remark as t_remark
+    t.shop_price as t_shop_price,t.remark as t_remark,t.top_time as t_top_time
   </sql>
   <select id="selectByExample" parameterType="com.yixiang.api.util.pojo.QueryExample" resultMap="BaseResultMap">
     select
@@ -154,6 +155,9 @@
       <if test="createTime != null">
         create_time,
       </if>
+      <if test="topTime != null">
+        top_time,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="sid != null">
@@ -227,6 +231,9 @@
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="topTime != null">
+        #{topTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>
@@ -310,6 +317,9 @@
       </if>
       <if test="record.createTime != null">
         t.create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.topTime != null">
+        t.top_time = #{record.topTime,jdbcType=TIMESTAMP},
       </if>
     </set>
     <if test="_parameter != null">

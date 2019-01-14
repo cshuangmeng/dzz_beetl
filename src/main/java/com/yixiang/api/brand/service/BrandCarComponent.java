@@ -119,7 +119,7 @@ public class BrandCarComponent {
 		QueryExample example=new QueryExample();
 		example.and().andEqualTo("is_special", Constants.YES).andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState())
 			.andEqualTo("source", source);
-		example.setOrderByClause("sort,id");
+		example.setOrderByClause("top_time desc,sort,id");
 		example.setLimit(json.getInteger("size"));
 		List<Map<Object,Object>> result=selectByExample(example).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());
 		return result;
@@ -142,7 +142,7 @@ public class BrandCarComponent {
 	//获取所有车型并按照首字母品牌分组排序
 	public List<Map<Object,Object>> queryAllBrandCars(){
 		List<Map<Object,Object>> brandList=brandInfoComponent.queryAllBrands(); 
-		List<Map<Object,Object>> cars=queryAllCars(null);
+		List<Map<Object,Object>> cars=queryAllCars(DataUtil.mapOf());
 		//按照品牌分组车型
 		Map<Integer,List<Map<Object,Object>>> carsMap=cars.stream()
 				.collect(Collectors.groupingBy(e->Integer.valueOf(e.get("brandId").toString()),Collectors.toList()));

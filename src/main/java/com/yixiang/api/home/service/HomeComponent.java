@@ -39,8 +39,7 @@ public class HomeComponent {
 		}
 		//其他文案
 		JSONObject json=JSONObject.parseObject(Redis.use().get("home_nearby_station_config"));
-		String distanceTip=json.getString("distance_tip");
-		return DataUtil.mapOf("ads",ads,"publish",system,"personal",personal,"distanceTip",distanceTip);
+		return DataUtil.mapOf("ads",ads,"publish",system,"personal",personal,"distanceTip",json.getString("distance_tip"));
 	}
 	
 }
