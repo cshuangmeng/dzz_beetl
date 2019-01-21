@@ -65,7 +65,13 @@ public class ChargerImporter {
 	
 	@Test
 	public void test(){
-		test6();
+		try {
+			String row=chargeClientBuilder.queryStationSingleStatus("38E48163-7304-1F55-BE01-8B23E2349626");
+			System.out.println(row);
+			//test6();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//更新品牌车型中的价格

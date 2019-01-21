@@ -164,10 +164,12 @@ public class UserInfoComponent {
 		String imei=!DataUtil.isEmpty(param.get(Constants.IMEI))?param.get(Constants.IMEI).toString():null;
 		String system=!DataUtil.isEmpty(param.get(Constants.SYSTEM))?param.get(Constants.SYSTEM).toString():null;
 		String openId=!DataUtil.isEmpty(param.get(Constants.WXOPENID))?param.get(Constants.WXOPENID).toString():null;
+		String platform=!DataUtil.isEmpty(param.get(Constants.PLATFORM))?param.get(Constants.PLATFORM).toString():null;
 		user.setPhone(phone);
 		device.setImei(imei);
 		device.setSystem(system);
 		device.setWxOpenId(openId);
+		device.setPlatform(platform);
 		if(StringUtils.isEmpty(user.getPhone())||((StringUtils.isEmpty(device.getSystem())||StringUtils.isEmpty(device.getImei()))
 				&&StringUtils.isEmpty(device.getWxOpenId()))){
 			log.info("用户手机号未输入,phone="+user.getPhone());

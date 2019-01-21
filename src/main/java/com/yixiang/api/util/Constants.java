@@ -18,6 +18,8 @@ public class Constants {
 	public final static String SYSTEM = "system";
 	// 请求设备字段
 	public final static String IMEI = "imei";
+	// 请求机型字段
+	public final static String PLATFORM = "platform";
 	// 请求微信openid字段
 	public final static String WXOPENID = "wxOpenId";
 	// 微信小程序登录session存储名称

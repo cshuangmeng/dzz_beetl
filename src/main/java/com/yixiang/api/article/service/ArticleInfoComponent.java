@@ -268,7 +268,9 @@ public class ArticleInfoComponent {
 					?title.substring(0, shareJson.getIntValue("title_length")):title,"content"
 					,content.length()>shareJson.getIntValue("desc_length")?content.substring(0, shareJson.getIntValue("desc_length"))
 					:content,"img",a.get("icon"),"url",(source.equals(ArticleInfo.ARTICLE_SOURCE_ENUM.SYSTEM.getSource())
-					?shareJson.getString("system_article_list_h5"):shareJson.getString("personal_article_list_h5"))+a.get("uuid"));
+					?shareJson.getString("system_article_list_h5"):shareJson.getString("personal_article_list_h5"))+a.get("uuid")
+					,"url1",(source.equals(ArticleInfo.ARTICLE_SOURCE_ENUM.SYSTEM.getSource())
+							?shareJson.getString("wx_system_article_list_h5"):shareJson.getString("wx_personal_article_list_h5"))+a.get("uuid"));
 			if(DataUtil.isEmpty(shareMap.get("title"))){
 				shareMap.put("title", shareMap.get("content"));
 			}

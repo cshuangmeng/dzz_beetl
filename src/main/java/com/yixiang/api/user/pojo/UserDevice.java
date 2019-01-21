@@ -10,6 +10,7 @@ public class UserDevice {
 	private String registrationId;
 	private String imei;
 	private String system;
+	private String platform;
 	private Date loginTime;
 	private Date createTime;
 
@@ -59,6 +60,14 @@ public class UserDevice {
 
 	public void setSystem(String system) {
 		this.system = system == null ? null : system.trim();
+	}
+
+	public String getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(String platform) {
+		this.platform = platform;
 	}
 
 	public Date getLoginTime() {

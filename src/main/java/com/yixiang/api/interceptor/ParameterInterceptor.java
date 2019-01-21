@@ -34,6 +34,7 @@ public class ParameterInterceptor extends HandlerInterceptorAdapter{
         params.put(Constants.PHONE, request.getHeader(Constants.PHONE));
         params.put(Constants.SYSTEM, request.getHeader(Constants.SYSTEM));
         params.put(Constants.IMEI, request.getHeader(Constants.IMEI));
+        params.put(Constants.PLATFORM, request.getHeader(Constants.PLATFORM));
         params.put(Constants.WXOPENID, request.getHeader(Constants.WXOPENID));
         params.put(Constants.WXA_SESSION, request.getHeader(Constants.WXA_SESSION));
         String queryString=ParamUtil.toQueryStringUseSingleValueMap(params);

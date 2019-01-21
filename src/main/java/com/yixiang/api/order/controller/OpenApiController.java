@@ -3,7 +3,6 @@ package com.yixiang.api.order.controller;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ public class OpenApiController {
 	
 	//聚能充回调充电账单
 	@RequestMapping("/nitfication_order")
-	public void syncChargingBill(HttpServletRequest request,HttpServletResponse response){
+	public void syncChargingBill(HttpServletResponse response){
 		boolean result=orderInfoComponent.syncChargingBill();
 		try {
 			response.getWriter().print(result);

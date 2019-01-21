@@ -356,7 +356,7 @@ public class ChargeClientBuilder {
         return hs.toString().toUpperCase();
     }
 	
-	private String encrypt(String sSrc, String sKey, String ivStr) throws Exception {
+	public String encrypt(String sSrc, String sKey, String ivStr) throws Exception {
         if (sKey == null) {
             System.out.print("Key为空null");
             return null;
@@ -385,7 +385,7 @@ public class ChargeClientBuilder {
     }
 	
 	// 解密
-    private String decrypt(String sSrc, String sKey, String ivStr) {
+    public String decrypt(String sSrc, String sKey, String ivStr) {
         try {
             // 判断Key是否正确
             if (sKey == null) {

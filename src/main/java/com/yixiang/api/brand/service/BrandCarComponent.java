@@ -60,7 +60,7 @@ public class BrandCarComponent {
 				}
 			}
 			if(StringUtils.isNotEmpty(batteryLife)){
-				if(price.contains("-")){
+				if(batteryLife.contains("-")){
 					example.and().andBetween("battery_life", Float.valueOf(batteryLife.split("-")[0]), Float.valueOf(batteryLife.split("-")[1]));
 				}else{
 					example.and().andGreaterThanOrEqualTo("battery_life", batteryLife);
