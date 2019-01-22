@@ -29,17 +29,20 @@ import okhttp3.Response;
 public class App1 {
 
 	public static void main(String[] args) {
-		String url="http://restapi.amap.com/v3/assistant/coordinate/convert";
+		/*String url="http://restapi.amap.com/v3/assistant/coordinate/convert";
 		Map<String,String> queryParas=ParaMap.create("key", "bb1ab2aa10af0e61619d7c1a5a349e82")
 				.put("locations", "116.346839,39.989076")
 				.put("coordsys", "baidu")
-				.getData();;
+				.getData();
+				*/
         //String json = HttpUtils.get(url, queryParas);
         //System.out.println(json);
 		//System.out.println(UUID.randomUUID().toString().replace("-", "").length());
 		//test1();
 		//test2();
 		//test3();
+		JSONObject json=JSONObject.parseObject("{'name':1}");
+		System.out.println(json.getString("age"));
 	}
 	
 	public static void test3(){

@@ -13,6 +13,8 @@ public class ResponseCode {
 		PARAM_INCORRECT(100006,"参数不正确"),
 		MUCH_DATA_FAIL(100007,"数据量过大"),
 		PAY_WAY_INCORRECT(100008,"支付方式不正确"),
+		SECRET_KEY_INCORRECT(100009,"密钥不正确"),
+		SIGN_KEY_INCORRECT(100010,"签名不正确"),
 
 		// 用户基本属性相关
 		USER_PHONE_BLACK(200001, "账户状态不正常"),

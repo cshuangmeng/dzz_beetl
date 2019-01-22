@@ -97,6 +97,51 @@ public class ChargeClientBuilder {
 		return httpClient;
 	}
 	
+	//创建AccessToken供第三发应用调用
+	public Map<String,Object> refreshToken(){
+		Map<String,Object> result=null;
+		try {
+			JSONObject config=JSONObject.parseObject(Redis.use().get("jnc_to_me_config"));
+			String token=DataUtil.buildUUID().toUpperCase();
+			Map<String,Object> dataMap=DataUtil.mapOf("OperatorID",config.getString("operator_id"),"SuccStat",Constants.NO,"AccessToken",token
+					,"TokenAvailableTime",config.getIntValue("token_expire_seconds"),"FailReason",Constants.NO);
+			// 加密Data
+	        String data=JSONObject.toJSONString(dataMap);
+	        log.info("加密前的data数据："+data);
+	        data = encrypt(data, config.getString("data_secret"), config.getString("data_secret_iv"));
+	        log.info("加密后的data数据："+data);
+			String sign=hashMac(config.getString("operator_id")+data,config.getString("sign_secret"));
+			result=DataUtil.mapOf("Ret",Constants.NO,"Data",data,"Msg","请求成功","Sig",sign);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result=DataUtil.mapOf("Ret",500,"Msg","系统错误");
+		}
+		log.info("响应数据为："+result);
+		return result;
+	}
+	
+	//解析推送过来的充电桩状态数据
+	public String getPushStationStatusData(){
+		try {
+			Object body=ThreadCache.getData(Constants.REQUEST_BODY);
+			if(DataUtil.isEmpty(body)||!DataUtil.isJSONObject(body.toString())){
+				log.info("数据格式不正确,body="+body);
+				return null;
+			}
+			log.info("解密前的data数据："+body);
+			JSONObject response=JSONObject.parseObject(body.toString());
+			// 解密Data
+			JSONObject config=JSONObject.parseObject(Redis.use().get("jnc_to_me_config"));
+			String data=response.getString("Data");
+            data=decrypt(data, config.getString("data_secret"), config.getString("data_secret_iv"));
+            log.info("解密后的data数据："+data);
+            return data;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	//获取Token
 	public String queryToken() {
 		try {
@@ -337,7 +382,7 @@ public class ChargeClientBuilder {
 		return responseStr;
 	}
 	
-	private String hashMac(String sStr, String key) throws Exception{
+	public String hashMac(String sStr, String key) throws Exception{
         SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), "HmacMD5");
         Mac mac = Mac.getInstance("HmacMD5");
         mac.init(signingKey);
@@ -356,23 +401,23 @@ public class ChargeClientBuilder {
         return hs.toString().toUpperCase();
     }
 	
-	private String encrypt(String sSrc, String sKey, String ivStr) throws Exception {
+	public String encrypt(String sSrc, String sKey, String ivStr) throws Exception {
         if (sKey == null) {
-            System.out.print("Key为空null");
+        	log.info("Key为空null");
             return null;
         }
         // 判断Key是否为16位
         if (sKey.length() != 16) {
-            System.out.print("Key长度不是16位");
+        	log.info("Key长度不是16位");
             return null;
         }
         if (ivStr == null) {
-            System.out.print("ivStr为空null");
+        	log.info("ivStr为空null");
             return null;
         }
         // 判断Key是否为16位
         if (ivStr.length() != 16) {
-            System.out.print("ivStr长度不是16位");
+        	log.info("ivStr长度不是16位");
             return null;
         }
         byte[] raw = sKey.getBytes("utf-8");
@@ -385,25 +430,25 @@ public class ChargeClientBuilder {
     }
 	
 	// 解密
-    private String decrypt(String sSrc, String sKey, String ivStr) {
+    public String decrypt(String sSrc, String sKey, String ivStr) {
         try {
             // 判断Key是否正确
             if (sKey == null) {
-                System.out.print("Key为空null");
+            	log.info("Key为空null");
                 return null;
             }
             // 判断Key是否为16位
             if (sKey.length() != 16) {
-                System.out.print("Key长度不是16位");
+            	log.info("Key长度不是16位");
                 return null;
             }
             if (ivStr == null) {
-                System.out.print("ivStr为空null");
+            	log.info("ivStr为空null");
                 return null;
             }
             // 判断Key是否为16位
             if (ivStr.length() != 16) {
-                System.out.print("ivStr长度不是16位");
+            	log.info("ivStr长度不是16位");
                 return null;
             }
 
