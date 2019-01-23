@@ -59,7 +59,7 @@ public class OpenApiController {
 	}
 	
 	//聚能充推送充电站状态
-	@RequestMapping("/nitfication_stationStatus")
+	@RequestMapping("/notification_stationStatus")
 	public void pushStationStatus(){
 		chargingStationComponent.pushStationStatus();
 	}

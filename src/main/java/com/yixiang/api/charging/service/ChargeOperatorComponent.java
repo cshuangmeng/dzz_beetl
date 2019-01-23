@@ -108,7 +108,7 @@ public class ChargeOperatorComponent {
 		            //存入Redis
 		            json=JSONObject.parseObject(data);
 		            token=json.getString("AccessToken");
-		            Redis.use().setex(config.getString("client_token_key"), json.getInteger("token_expire_seconds"), token);
+		            Redis.use().setex(config.getString("client_token_key"), config.getInteger("token_expire_seconds"), token);
 				}
 			}
 			return token;
@@ -156,7 +156,9 @@ public class ChargeOperatorComponent {
 			if(config.containsKey("max_page_size")&&config.getIntValue("max_page_size")>0&&pageSize>config.getIntValue("max_page_size")){
 				pageSize=config.getIntValue("max_page_size");
 			}
-			example.and().andGreaterThanOrEqualTo("update_time", param.getString("LastQueryTime"));
+			if(StringUtils.isNotBlank(param.getString("LastQueryTime"))){
+				example.and().andGreaterThanOrEqualTo("update_time", param.getString("LastQueryTime"));
+			}
 		}
 		long total=chargingStationComponent.countByExample(example);
 		long pageCount=total%pageSize>0?total/pageSize+1:total/pageSize;
@@ -164,7 +166,7 @@ public class ChargeOperatorComponent {
 		example.setLimit(pageSize);
 		example.setOrderByClause("update_time desc,id desc");
 		//转换成标准格式
-		JSONObject oss=JSONObject.parseObject(Redis.use().get(""));
+		JSONObject oss=JSONObject.parseObject(Redis.use().get("charging_oss_config"));
 		List<Map<String,Object>> stations=chargingStationComponent.selectByExample(example).stream().map(i->{
 			AreaInfo area=areaInfoComponent.getAreaInfo(i.getAreaId());
 			List<Map<String,Object>> equipments=equipmentInfoComponent.getEquipmentInfoByStationId(i.getStationId()).stream().map(j->{
@@ -273,8 +275,8 @@ public class ChargeOperatorComponent {
 		String authorization=request.getHeader("Authorization");
 		JSONObject config=getOperatorConfig(operatorId);
 		String token=null!=config?Redis.use().get(config.getString("operator_token_key")):null;
-		if(StringUtils.isBlank(token)||!authorization.equals("Bearer "+token)){
-			log.info("token不正确,token="+token+",authorization"+authorization);
+		if(StringUtils.isBlank(token)||StringUtils.isBlank(authorization)||!authorization.equals("Bearer "+token)){
+			log.info("token不正确,token="+token+",authorization="+authorization);
 			return false;
 		}
 		return true;

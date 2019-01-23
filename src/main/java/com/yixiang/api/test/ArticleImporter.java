@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -82,10 +83,10 @@ public class ArticleImporter {
 		//readBrand();
 		//updateCarBrand();
 		//readChargingStation();
-		//updateChargingStation();
+		updateChargingStation();
 		//updateChargingStation1();
 		//updateLngLatToAutonavi();
-		updateChargingStation2();
+		//updateChargingStation2();
 	}
 	
 	public void updateChargingStation2(){
@@ -182,26 +183,19 @@ public class ArticleImporter {
 	public void updateChargingStation(){
 		try {
 			QueryExample example=new QueryExample();
-			example.and().andGreaterThan("id", 12477);
-			List<ChargingStation> stations=chargingStationComponent.selectByExample(example);
-			String url="http://img.zc3u.com/station/";
-			ChargingStation update=null;
-			for(ChargingStation station:stations){
-				update=new ChargingStation();
-				update.setId(station.getId());
-				update.setUuid(station.getUuid());
-				String names="";
-				if(StringUtils.isNotEmpty(station.getDetailImgs())){
-					for(String detailImg:station.getDetailImgs().split(",")){
-						names+=(names.length()>0?",":"")+saveImgToOSS(url+detailImg.replace(".jpg", ""));
-					}
-					update.setDetailImgs(StringUtils.isNotEmpty(names)?names:null);
+			example.and().andEqualTo("user_id", 0).andEqualTo("source", 1).andNotEqualTo("detail_imgs", "");
+			Map<String,List<ChargingStation>> stations=chargingStationComponent.selectByExample(example).stream()
+					.collect(Collectors.groupingBy(e->e.getDetailImgs(),Collectors.toList()));
+			ChargingStation update=new ChargingStation();
+			stations.keySet().stream().forEach(e->{
+				if(e.startsWith("http")){
+					example.clear();
+					example.and().andIn("id", stations.get(e).stream().map(i->i.getId()).collect(Collectors.toList()));
+					update.setDetailImgs(saveImgToOSS(e));
+					update.setHeadImg(update.getDetailImgs());
+					chargingStationComponent.updateByExampleSelective(update, example);
 				}
-				if(StringUtils.isNotEmpty(update.getDetailImgs())){
-					update.setHeadImg(update.getDetailImgs().split(",")[0]);
-				}
-				chargingStationComponent.updateChargingStation(update);
-			}
+			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
