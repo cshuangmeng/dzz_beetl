@@ -590,12 +590,6 @@ public class OrderInfoComponent {
 		}
 	}
 	
-	//创建AccessToken供第三发应用调用
-	public Map<String,Object> queryToken(){
-		String token=DataUtil.buildUUID().toUpperCase();
-		return DataUtil.mapOf("Ret",0,"Msg","","Data",DataUtil.mapOf("AccessToken",token,"TokenAvailableTime",7200,"SuccStat",0));
-	}
-	
 	//查询用户订单
 	public List<OrderInfo> queryOrders(Integer userId,List<Integer> states,Integer offset,Integer limit){
 		if(null!=userId&&userId>0){

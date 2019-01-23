@@ -1,3 +1,4 @@
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/service/EquipmentInfoComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/mapper/UserEvaluationMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/pojo/ReportStationInfo.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/controller/ArticlePraiseController.java
@@ -99,6 +100,7 @@
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/order/service/TencentPayCallbackComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/mapper/NaviLogMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/main/ServletInitializer.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/service/ChargeOperatorComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/PayClientBuilder.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/order/mapper/TradeHistoryMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/mapper/ArticleCommentMapper.java

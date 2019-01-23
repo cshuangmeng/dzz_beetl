@@ -2,6 +2,9 @@ package com.yixiang.api.charging.pojo;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
+
+import com.yixiang.api.util.DataUtil;
 
 public class ChargingStation {
 
@@ -355,6 +358,15 @@ public class ChargingStation {
 
 	public void setDistance(BigDecimal distance) {
 		this.distance = distance;
+	}
+	
+	public Map<String,Object> toStandardFormat(){
+		return DataUtil.mapOf("StationID",stationId,"OperatorID",providerId,"StationName",title,"CountryCode","CN"
+				,"Address",address,"StationTel",telephone,"ServiceTel",servicePhone,"StationType",source,"StationStatus",state
+				,"ParkNums",parkNums,"StationLng",lng,"StationLat",lat,"SiteGuide",siteGuide,"Construction",construction
+				,"MatchCars",matchCars,"ParkInfo",parkInfo,"BusineHours",openTime,"ElectricityFee",electricityPrice
+				,"ServiceFee",serviceFee,"ParkFee",parkingPrice,"OperatorName",provider,"Payment",payWay
+				,"SupportOrder",supportOrder,"Remark",remark);
 	}
 
 	// 状态

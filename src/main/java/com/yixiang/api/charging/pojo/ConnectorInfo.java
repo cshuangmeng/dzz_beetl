@@ -1,5 +1,9 @@
 package com.yixiang.api.charging.pojo;
 
+import java.util.Map;
+
+import com.yixiang.api.util.DataUtil;
+
 public class ConnectorInfo {
 
 	private Integer id;
@@ -137,4 +141,11 @@ public class ConnectorInfo {
 	public void setLockState(Integer lockState) {
 		this.lockState = lockState;
 	}
+	
+	public Map<String,Object> toStandardFormat(){
+		return DataUtil.mapOf("ConnectorID",connectorId,"ConnectorName",connectorName,"ConnectorType",connectorType
+				,"VoltageUpperLimits",voltageUpper,"VoltageLowerLimits",voltageLower,"Current",current
+				,"Power",power,"ParkNo",parkNo,"NationalStandard",nationalStandard);
+	}
+	
 }

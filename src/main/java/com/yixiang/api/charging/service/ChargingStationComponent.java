@@ -20,10 +20,12 @@ import com.feilong.core.date.DateUtil;
 import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.charging.mapper.ChargingStationMapper;
 import com.yixiang.api.charging.pojo.ChargingStation;
+import com.yixiang.api.charging.pojo.ConnectorInfo;
 import com.yixiang.api.coin.service.CoinHistoryComponent;
 import com.yixiang.api.user.pojo.UserInfo;
 import com.yixiang.api.user.service.UserChargingComponent;
 import com.yixiang.api.user.service.UserInfoComponent;
+import com.yixiang.api.util.ChargeClientBuilder;
 import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.OSSUtil;
@@ -56,6 +58,12 @@ public class ChargingStationComponent {
 	private NaviLogComponent naviLogComponent;
 	@Autowired
 	private ShareLogComponent shareLogComponent;
+	@Autowired
+	private ChargeClientBuilder chargeClientBuilder;
+	@Autowired
+	private ConnectorInfoComponent connectorInfoComponent;
+	@Autowired
+	private ChargeOperatorComponent chargeOperatorComponent;
 	
 	Logger log=LoggerFactory.getLogger(getClass());
 	
@@ -270,6 +278,34 @@ public class ChargingStationComponent {
 	//搜索充电桩
 	public List<ChargingStation> queryChargingStations(Map<String,Object> param){
 		return chargingStationMapper.queryChargingStations(param);
+	}
+	
+	//推送充电站状态信息
+	public void pushStationStatus(){
+		String data=chargeClientBuilder.getPushStationStatusData();
+		if(!DataUtil.isJSONObject(data)||!JSONObject.parseObject(data).containsKey("ConnectorStatusInfo")){
+			log.info("数据格式不正确,放弃更新,data="+data);
+			return;
+		}
+		//更新充电站状态
+		JSONObject json=JSONObject.parseObject(data).getJSONObject("ConnectorStatusInfo");
+		if(StringUtils.isNotBlank(json.getString("StationID"))&&StringUtils.isNotBlank(json.getString("Status"))){
+			QueryExample example=new QueryExample();
+			example.and().andEqualTo("station_id", json.getString("StationID"));
+			ChargingStation update=new ChargingStation();
+			update.setState(json.getInteger("Status"));
+			updateByExampleSelective(update, example);
+		}
+		//更新充电桩状态
+		if(StringUtils.isNotBlank(json.getString("ConnectorID"))&&StringUtils.isNotBlank(json.getString("ConnectorStatus"))){
+			QueryExample example=new QueryExample();
+			example.and().andEqualTo("connector_id", json.getString("ConnectorID"));
+			ConnectorInfo update=new ConnectorInfo();
+			update.setState(json.getInteger("ConnectorStatus"));
+			connectorInfoComponent.updateByExampleSelective(update, example);
+		}
+		//同步到其他合作方
+		chargeOperatorComponent.pushStationStatus(JSONObject.parseObject(data));
 	}
 	
 	//获取充电站信息

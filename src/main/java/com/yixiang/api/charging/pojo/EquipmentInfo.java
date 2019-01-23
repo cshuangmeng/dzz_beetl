@@ -1,6 +1,9 @@
 package com.yixiang.api.charging.pojo;
 
 import java.math.BigDecimal;
+import java.util.Map;
+
+import com.yixiang.api.util.DataUtil;
 
 public class EquipmentInfo {
 
@@ -112,4 +115,11 @@ public class EquipmentInfo {
 	public void setPower(Float power) {
 		this.power = power;
 	}
+	
+	public Map<String,Object> toStandardFormat(){
+		return DataUtil.mapOf("EquipmentID",equipmentId,"ManufacturerID",manufactureId,"ManufacturerName",manufactureName
+				,"EquipmentModel",equipmentModel,"ProductionDate",productionDate,"EquipmentType",equipmentType
+				,"EquipmentLng",lng,"EquipmentLat",lat,"Power",power,"EquipmentName",equipmentName);
+	}
+	
 }
