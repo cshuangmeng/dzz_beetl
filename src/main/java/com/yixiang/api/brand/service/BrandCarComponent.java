@@ -117,8 +117,8 @@ public class BrandCarComponent {
 	public List<Map<Object,Object>> querySpecialCars(Integer source){
 		JSONObject json=JSONObject.parseObject(Redis.use().get("special_brand_car_config"));
 		QueryExample example=new QueryExample();
-		example.and().andEqualTo("is_special", Constants.YES).andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState())
-			.andEqualTo("source", source);
+		example.and().andEqualTo("label", BrandCar.CAR_LABEL_ENUM.RECOMMEND.getLabel())
+			.andEqualTo("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState()).andEqualTo("source", source);
 		example.setOrderByClause("top_time desc,sort,id");
 		example.setLimit(json.getInteger("size"));
 		List<Map<Object,Object>> result=selectByExample(example).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());

@@ -267,4 +267,18 @@ public class BrandCar {
 		}
 	}
 
+	// 车型标签
+	public static enum CAR_LABEL_ENUM {
+		NEWEST(1), HOTTEST(2), RECOMMEND(3);
+		private Integer label;
+
+		private CAR_LABEL_ENUM(Integer label) {
+			this.label = label;
+		}
+
+		public Integer getLabel() {
+			return label;
+		}
+	}
+
 }

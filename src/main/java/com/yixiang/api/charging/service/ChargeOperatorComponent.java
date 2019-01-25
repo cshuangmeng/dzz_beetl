@@ -65,6 +65,7 @@ public class ChargeOperatorComponent {
 		}
 		//校验运营商密钥是否正确
 		String data=chargeClientBuilder.decrypt(response.getString("Data"), config.getString("data_secret"), config.getString("data_secret_iv"));
+		log.info("解密后的数据为:"+data);
 		if(StringUtils.isBlank(data)||!DataUtil.isJSONObject(data)||!JSONObject.parseObject(data).containsKey("OperatorSecret")
 				||!JSONObject.parseObject(data).getString("OperatorSecret").equals(config.getString("operator_secret"))){
 			log.info("传递的OperatorSecret参数不正确,body="+response+",operator_secret="+config.getString("operator_secret"));
@@ -140,10 +141,11 @@ public class ChargeOperatorComponent {
 		}
 		//校验业务数据是否正确
 		String data=chargeClientBuilder.decrypt(response.getString("Data"), config.getString("data_secret"), config.getString("data_secret_iv"));
+		log.info("解密后的数据为:"+data);
 		int pageNo=1;
 		int pageSize=config.getIntValue("default_page_size");
 		QueryExample example=new QueryExample();
-		example.and().andEqualTo("source", Constants.YES).andEqualTo("user_id", Constants.NO)
+		example.and().andEqualTo("source", Constants.YES).andEqualTo("user_id", Constants.NO).andNotEqualTo("station_id", "")
 			.andEqualTo("state", ChargingStation.STATION_STATE_ENUM.ENABLED.getState());
 		if(StringUtils.isNotBlank(data)&&DataUtil.isJSONObject(data)){
 			JSONObject param=JSONObject.parseObject(data);
@@ -212,6 +214,7 @@ public class ChargeOperatorComponent {
 		}
 		//校验业务数据是否正确
 		String data=chargeClientBuilder.decrypt(response.getString("Data"), config.getString("data_secret"), config.getString("data_secret_iv"));
+		log.info("解密后的数据为:"+data);
 		if(StringUtils.isBlank(data)||!DataUtil.isJSONObject(data)||!JSONObject.parseObject(data).containsKey("StationID")){
 			log.info("传递的OperatorSecret参数不正确,body="+response+",operator_secret="+config.getString("operator_secret"));
 			return DataUtil.mapOf("SuccStat",Constants.YES,"FailReason",FAIL_REASON_ENUM.DATA_INCORRECT.getState());

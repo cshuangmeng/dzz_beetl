@@ -1,15 +1,20 @@
 package com.yixiang.api.test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -87,9 +92,9 @@ public class ArticleImporter {
 		//readBrand();
 		//updateCarBrand();
 		//readChargingStation();
-		updateChargingStation();
+		//updateChargingStation();
 		//updateChargingStation1();
-		//updateLngLatToAutonavi();
+		updateLngLatToAutonavi();
 		//updateChargingStation2();
 	}
 	
@@ -119,16 +124,42 @@ public class ArticleImporter {
 	
 	public void updateLngLatToAutonavi(){
 		QueryExample example=new QueryExample();
-		example.and().andGreaterThan("create_time", "2018-12-20");
+		example.and().andGreaterThan("create_time", "2018-12-21").andNotEqualTo("id", 53981);
 		List<ChargingStation> stations=chargingStationComponent.selectByExample(example);
 		ChargingStation update=null;
 		JSONObject json=null;
+		/*设置areaId
 		String url="http://api.map.baidu.com/geocoder/v2/";
 		Map<String,String> queryParas=ParaMap.create("ak", "Yw2f6FG6SOcq0MoBfeuG0rihcaFNQkBE").put("output", "json").put("pois", "0").getData();
+		*/
+		//百度坐标转换成高德坐标
+		String url="http://restapi.amap.com/v3/assistant/coordinate/convert";
+		Map<String,String> queryParas=ParaMap.create("key", "bb1ab2aa10af0e61619d7c1a5a349e82")
+				.put("coordsys", "baidu")
+				.getData();
+		
+		BufferedReader reader=null;
+		String row=null;
+		Map<String,Object> map=new HashMap<>();
+		try {
+			reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.txt"),Constants.UTF8));
+			while((row=reader.readLine())!=null){
+				JSONArray array=JSONObject.parseObject(row).getJSONArray("StationInfos");
+				for(int i=0;i<array.size();i++){
+					JSONObject station=array.getJSONObject(i);
+					map.put(station.getString("StationID"), station.get("StationLng")+","+station.get("StationLat"));
+				}
+			}
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		for(ChargingStation station:stations){
-			queryParas.put("location", station.getLat()+","+station.getLng());
-	        json=JSONObject.parseObject(HttpUtils.get(url, queryParas));
-	        if(json.getString("status").equalsIgnoreCase("0")){
+			//queryParas.put("locations", station.getLng()+","+station.getLat());
+	        //json=JSONObject.parseObject(HttpUtils.get(url, queryParas));
+	        //System.out.println(queryParas.get("locations")+","+json);
+	        /*if(json.getString("status").equalsIgnoreCase("0")){
 	        	update=new ChargingStation();
 	        	update.setId(station.getId());
 	        	AreaInfo area=areaInfoComponent.queryAreaInfoByAreaCode(json.getJSONObject("result").getJSONObject("addressComponent").getInteger("adcode"));
@@ -146,7 +177,21 @@ public class ArticleImporter {
 					chargingStationComponent.updateChargingStation(update);
 				}
 				*/
-	        }
+        	/*if(json.getString("status").equalsIgnoreCase("1")){
+	        	update=new ChargingStation();
+	        	update.setId(station.getId());
+	        	update.setLng(new BigDecimal(json.getString("locations").split(",")[0]));
+				update.setLat(new BigDecimal(json.getString("locations").split(",")[1]));
+				chargingStationComponent.updateChargingStation(update);
+			}*/
+			
+			update=new ChargingStation();
+        	update.setId(station.getId());
+        	if(map.containsKey(station.getStationId())){
+	        	update.setLng(new BigDecimal(map.get(station.getStationId()).toString().split(",")[0]));
+				update.setLat(new BigDecimal(map.get(station.getStationId()).toString().split(",")[1]));
+				chargingStationComponent.updateChargingStation(update);
+        	}
 		}
 	}
 	
