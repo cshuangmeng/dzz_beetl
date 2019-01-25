@@ -143,7 +143,7 @@ public class ChargeOperatorComponent {
 		int pageNo=1;
 		int pageSize=config.getIntValue("default_page_size");
 		QueryExample example=new QueryExample();
-		example.and().andEqualTo("source", Constants.YES).andEqualTo("user_id", Constants.NO)
+		example.and().andEqualTo("source", Constants.YES).andEqualTo("user_id", Constants.NO).andNotEqualTo("station_id", "")
 			.andEqualTo("state", ChargingStation.STATION_STATE_ENUM.ENABLED.getState());
 		if(StringUtils.isNotBlank(data)&&DataUtil.isJSONObject(data)){
 			JSONObject param=JSONObject.parseObject(data);
