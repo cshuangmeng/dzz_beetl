@@ -1,6 +1,7 @@
 com/yixiang/api/order/controller/ThirdPayNotifyController.class
 com/yixiang/api/brand/pojo/BrandInfo.class
 com/yixiang/api/order/service/OrderInfoComponent.class
+com/yixiang/api/brand/pojo/BrandCar$CAR_LABEL_ENUM.class
 com/yixiang/api/user/mapper/UserInfoMapper.class
 com/yixiang/api/util/mapper/LabelInfoMapper.class
 com/yixiang/api/charging/service/EquipmentInfoComponent.class
@@ -23,6 +24,7 @@ com/yixiang/api/util/mapper/ShareLogMapper.class
 com/yixiang/api/user/service/FansInfoComponent.class
 com/yixiang/api/user/controller/UserChargingController.class
 com/yixiang/api/quartz/CheckChargingStateJob.class
+com/yixiang/api/util/controller/VersionInfoController.class
 com/yixiang/api/user/service/UserDeviceComponent.class
 com/yixiang/api/charging/pojo/ChargingStation$STATION_STATE_ENUM.class
 com/yixiang/api/order/mapper/TradeHistoryMapper.class
@@ -65,6 +67,7 @@ com/yixiang/api/user/controller/FansInfoController.class
 com/yixiang/api/refund/pojo/RefundInfo$REFUND_STATE_ENUM.class
 com/yixiang/api/brand/service/AppointmentInfoComponent.class
 com/yixiang/api/recharge/pojo/RechargeInfo.class
+com/yixiang/api/quartz/PayChargingOrderJob.class
 com/yixiang/api/user/controller/AppUserApiController.class
 com/yixiang/api/brand/service/BrandCarComponent.class
 com/yixiang/api/util/Result.class
@@ -194,12 +197,15 @@ com/yixiang/api/article/pojo/ArticleComment$COMMENT_STATE_ENUM.class
 com/yixiang/api/order/service/TencentPayCallbackComponent.class
 com/yixiang/api/util/pojo/ShareLog.class
 com/yixiang/api/refund/pojo/RefundSummary$ORDER_TYPE_ENUM.class
+com/yixiang/api/util/pojo/VersionInfo.class
 com/yixiang/api/recharge/controller/RechargeInfoController.class
 com/yixiang/api/charging/pojo/ConnectorInfo.class
 com/yixiang/api/charging/pojo/ChargingStation.class
 com/yixiang/api/util/pojo/QueryExample$Criteria.class
+com/yixiang/api/util/service/VersionInfoComponent.class
 com/yixiang/api/util/pojo/Config.class
 com/yixiang/api/charging/controller/ChargingStationController.class
+com/yixiang/api/util/mapper/VersionInfoMapper.class
 com/yixiang/api/util/service/OpenAppLogComponent.class
 com/yixiang/api/quartz/JobFactory.class
 com/yixiang/api/util/mapper/BrowseLogMapper.class

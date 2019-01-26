@@ -33,6 +33,7 @@
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/recharge/service/RechargeTemplateComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/test/App1.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/service/FansInfoComponent.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/mapper/VersionInfoMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/controller/ChargingStationController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/FileTypeUtil.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/test/ArticleImporter.java
@@ -54,6 +55,7 @@
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/service/UserEvaluationComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/pojo/UserEvaluation.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/mapper/ShareLogMapper.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/service/VersionInfoComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/mapper/UserDeviceMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/home/service/HomeComponent.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/service/ConfigComponent.java
@@ -92,6 +94,7 @@
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/mapper/ActivityAdMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/pojo/ArticlePraise.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/service/BrowseLogComponent.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/quartz/PayChargingOrderJob.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/pojo/BrowseLog.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/brand/controller/BrandInfoController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/pojo/ArticleInfo.java
@@ -119,11 +122,13 @@
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/controller/MessageHistoryController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/test/ChargerImporter.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/service/ArticlePraiseComponent.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/controller/VersionInfoController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/controller/ChargingCommentController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/XMLUtil.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/article/controller/ArticleCommentController.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/pojo/FansInfo.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/charging/service/ConnectorInfoComponent.java
+/Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/pojo/VersionInfo.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/util/Constants.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/mapper/MessageHistoryMapper.java
 /Users/huangmeng/Documents/workspace/beetl/src/main/java/com/yixiang/api/user/controller/UserInfoController.java

@@ -8,12 +8,13 @@
     <result column="t_registration_id" jdbcType="VARCHAR" property="registrationId" />
     <result column="t_imei" jdbcType="VARCHAR" property="imei" />
     <result column="t_system" jdbcType="VARCHAR" property="system" />
+    <result column="t_platform" jdbcType="VARCHAR" property="platform" />
     <result column="t_login_time" jdbcType="TIMESTAMP" property="loginTime" />
     <result column="t_create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <sql id="Base_Column_List">
     t.id as t_id, t.user_id as t_user_id, t.registration_id as t_registration_id, t.imei as t_imei, 
-    t.system as t_system, t.login_time as t_login_time, t.create_time as t_create_time,t.wx_open_id as t_wx_open_id
+    t.system as t_system, t.login_time as t_login_time, t.create_time as t_create_time,t.wx_open_id as t_wx_open_id,t.platform as t_platform
   </sql>
   <select id="selectByExample" parameterType="com.yixiang.api.util.pojo.QueryExample" resultMap="BaseResultMap">
     select
@@ -50,6 +51,9 @@
       <if test="system != null">
         system,
       </if>
+      <if test="platform != null">
+        platform,
+      </if>
       <if test="loginTime != null">
         login_time,
       </if>
@@ -72,6 +76,9 @@
       </if>
       <if test="system != null">
         #{system,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null">
+        #{platform,jdbcType=VARCHAR},
       </if>
       <if test="loginTime != null">
         #{loginTime,jdbcType=TIMESTAMP},
@@ -104,6 +111,9 @@
       </if>
       <if test="record.system != null">
         t.system = #{record.system,jdbcType=VARCHAR},
+      </if>
+      <if test="record.platform != null">
+        t.platform = #{record.platform,jdbcType=VARCHAR},
       </if>
       <if test="record.loginTime != null">
         t.login_time = #{record.loginTime,jdbcType=TIMESTAMP},
