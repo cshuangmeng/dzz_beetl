@@ -6,8 +6,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,8 +35,6 @@ public class OpenApiController {
 	@Autowired
 	private ChargeOperatorComponent chargeOperatorComponent;
 	
-	Logger log=LoggerFactory.getLogger(getClass());
-	
 	//聚能充回调充电账单
 	@RequestMapping("/nitfication_order")
 	public void syncChargingBill(HttpServletResponse response){
@@ -53,9 +49,7 @@ public class OpenApiController {
 	//聚能充刷新AccessToken
 	@RequestMapping("/query_token")
 	public Map<String,Object> refreshToken(){
-		Map<String,Object> result=chargeClientBuilder.refreshToken();
-		log.info(JSONObject.toJSONString(result));
-		return result;
+		return chargeClientBuilder.refreshToken();
 	}
 	
 	//聚能充推送充电站状态
@@ -69,7 +63,6 @@ public class OpenApiController {
 	public Map<String,Object> refreshToken(HttpServletRequest request){
 		Map<String,Object> result=chargeOperatorComponent.refreshToken(request);
 		result=chargeOperatorComponent.setResponseData(result);
-		log.info(JSONObject.toJSONString(result));
 		return result;
 	}
 	
@@ -78,7 +71,6 @@ public class OpenApiController {
 	public Map<String,Object> queryChargingStations(HttpServletRequest request){
 		Map<String,Object> result=chargeOperatorComponent.queryChargingStations(request);
 		result=chargeOperatorComponent.setResponseData(result);
-		log.info(JSONObject.toJSONString(result));
 		return result;
 	}
 	
@@ -87,7 +79,6 @@ public class OpenApiController {
 	public Map<String,Object> queryStationConnectors(HttpServletRequest request){
 		Map<String,Object> result=chargeOperatorComponent.queryStationConnectors(request);
 		result=chargeOperatorComponent.setResponseData(result);
-		log.info(JSONObject.toJSONString(result));
 		return result;
 	}
 	
