@@ -83,7 +83,7 @@ public class OpenApiController {
 	}
 	
 	//合作方获取充电桩信息
-	@RequestMapping("/co/query_connectors_info")
+	@RequestMapping("/co/query_station_status")
 	public Map<String,Object> queryStationConnectors(HttpServletRequest request){
 		Map<String,Object> result=chargeOperatorComponent.queryStationConnectors(request);
 		result=chargeOperatorComponent.setResponseData(result);
