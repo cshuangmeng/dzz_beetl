@@ -215,14 +215,18 @@ public class ChargeOperatorComponent {
 		//校验业务数据是否正确
 		String data=chargeClientBuilder.decrypt(response.getString("Data"), config.getString("data_secret"), config.getString("data_secret_iv"));
 		log.info("解密后的数据为:"+data);
-		if(StringUtils.isBlank(data)||!DataUtil.isJSONObject(data)||!JSONObject.parseObject(data).containsKey("StationID")){
+		if(StringUtils.isBlank(data)||!DataUtil.isJSONObject(data)||!JSONObject.parseObject(data).containsKey("StationIDs")){
 			log.info("传递的OperatorSecret参数不正确,body="+response+",operator_secret="+config.getString("operator_secret"));
 			return DataUtil.mapOf("SuccStat",Constants.YES,"FailReason",FAIL_REASON_ENUM.DATA_INCORRECT.getState());
 		}
-		String stationId=JSONObject.parseObject(data).getString("StationID");
-		List<Map<String,Object>> connectors=connectorInfoComponent.getConnectorInfoByStationId(stationId)
-				.stream().map(i->i.toStandardFormat()).collect(Collectors.toList());
-		return DataUtil.mapOf("ConnectorInfos",connectors,"SuccStat",Constants.NO,"FailReason",Constants.NO);
+		JSONArray stationIds=JSONObject.parseObject(data).getJSONArray("StationIDs");
+		List<Map<Object,Object>> stations=stationIds.stream().map(o->{
+			List<Map<Object,Object>> connectors=connectorInfoComponent.getConnectorInfoByStationId(o.toString())
+					.stream().map(i->DataUtil.mapOf("ConnectorID",i.getConnectorId(),"Status",i.getState()
+						,"ParkStatus",i.getParkState(),"LockStatus",i.getLockState())).collect(Collectors.toList());
+			return DataUtil.mapOf("StationID",o,"ConnectorStatusInfos",connectors);
+		}).collect(Collectors.toList());
+		return DataUtil.mapOf("Total",stationIds.size(),"StationStatusInfos",stations,"SuccStat",Constants.NO,"FailReason",Constants.NO);
 	}
 	
 	//推送充电桩状态
