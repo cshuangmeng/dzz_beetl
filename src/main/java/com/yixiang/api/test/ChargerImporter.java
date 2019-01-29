@@ -36,6 +36,7 @@ import com.yixiang.api.brand.pojo.BrandInfo;
 import com.yixiang.api.brand.service.BrandInfoComponent;
 import com.yixiang.api.charging.pojo.ChargingStation;
 import com.yixiang.api.charging.service.ChargingStationComponent;
+import com.yixiang.api.charging.service.ConnectorInfoComponent;
 import com.yixiang.api.main.Application;
 import com.yixiang.api.util.ChargeClientBuilder;
 import com.yixiang.api.util.Constants;
@@ -55,6 +56,8 @@ public class ChargerImporter {
 	@Autowired
 	private ChargingStationComponent chargingStationComponent;
 	@Autowired
+	private ConnectorInfoComponent connectorInfoComponent;
+	@Autowired
 	private BrandInfoComponent brandInfoComponent;
 	@Autowired
 	private ChargeClientBuilder chargeClientBuilder;
@@ -65,7 +68,8 @@ public class ChargerImporter {
 	
 	@Test
 	public void test(){
-		test10();
+		//test10();
+		test9_1();
 	}
 	
 	//更新品牌车型中的价格
@@ -133,8 +137,8 @@ public class ChargerImporter {
 	//读取桩信息
 	public void test9(){
 		try {
-			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/易享充电/jnc_data.txt"),Constants.UTF8));
-			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/易享充电/jnc_zhuang.txt"),Constants.UTF8));
+			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_data.txt"),Constants.UTF8));
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.txt"),Constants.UTF8));
 			String row=null;
 			JSONObject json=null;
 			while((row=reader.readLine())!=null){
@@ -151,6 +155,62 @@ public class ChargerImporter {
 			}
 			writer.close();
 			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//读取桩信息
+	public void test9_1(){
+		try {
+			BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.txt"),Constants.UTF8));
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.sql"),Constants.UTF8));
+			String row=null;
+			JSONObject json=null;
+			int index=1;
+			while((row=reader.readLine())!=null){
+				json=JSONObject.parseObject(row);
+				System.out.println("第"+(index++)+"行");
+				JSONArray array=json.getJSONArray("StationInfos");
+				for(int i=0;i<array.size();i++){
+					JSONObject station=array.getJSONObject(i);
+					if(!station.containsKey("ConnectorStatus")||!station.containsKey("EquipmentID")){
+						continue;
+					}
+					String sql="update connector_info set state="+station.get("ConnectorStatus");
+					if(station.containsKey("ParkStatus")){
+						sql+=",park_state="+station.get("ParkStatus");
+					}
+					if(station.containsKey("LockStatus")){
+						sql+=",lock_state="+station.get("LockStatus");
+					}
+					sql+=" where connector_id='"+station.get("EquipmentID")+"';";
+					writer.write(sql);
+					writer.newLine();
+					writer.flush();
+				}
+			}
+			writer.close();
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//读取桩信息
+	public void test9_2(){
+		try {
+			BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/huangmeng/Downloads/yixiang/jnc_zhuang.txt"),Constants.UTF8));
+			QueryExample example=new QueryExample();
+			example.and().andNotEqualTo("state", 1);
+			List<String> stationIds=connectorInfoComponent.selectByExample(example).stream().map(i->i.getStationId()).distinct().collect(Collectors.toList());
+			for(String i:stationIds){
+				String data=chargeClientBuilder.queryStationSingleStatus(i);
+				writer.write(data);
+				writer.newLine();
+				writer.flush();
+			}
+			writer.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
