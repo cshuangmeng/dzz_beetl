@@ -34,7 +34,7 @@ public class AliPayCallbackComponent {
 		try {
 			//验证交易是否成功
 			String tradeStatus = request.getParameter("trade_status");
-			if(StringUtils.isNotEmpty(tradeStatus)&&tradeStatus.equals("TRADE_SUCCESS")){
+			if(StringUtils.isEmpty(request.getParameter("refund_status"))&&StringUtils.isNotEmpty(tradeStatus)&&tradeStatus.equals("TRADE_SUCCESS")){
 				//拼装请求参数
 				Enumeration<?> pNames = request.getParameterNames();
 	            Map<String, String> params = new HashMap<String, String>();

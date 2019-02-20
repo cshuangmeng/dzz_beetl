@@ -127,14 +127,16 @@ public class BrandCarComponent {
 	
 	//获取所有车型
 	public List<Map<Object,Object>> queryAllCars(Map<String,Object> param){
-		int page=!DataUtil.isEmpty(param.get("page"))?Integer.parseInt(param.get("page").toString()):0;
+		Integer page=!DataUtil.isEmpty(param.get("page"))?Integer.parseInt(param.get("page").toString()):null;
 		int limit=!DataUtil.isEmpty(param.get("limit"))?Integer.parseInt(param.get("limit").toString())
 				:JSONObject.parseObject(Redis.use().get("brand_car_list_config")).getIntValue("size");
 		limit=limit>0?limit:0;
 		param.put("state", BrandCar.CAR_STATE_ENUM.ENABLED.getState());
 		param.put("orderBy","sort,id");
-		param.put("offset", (page>0?page-1:0)*limit);
-		param.put("limit", limit);
+		if(null!=page){
+			param.put("offset", (page>0?page-1:0)*limit);
+			param.put("limit", limit);
+		}
 		List<Map<Object,Object>> result=selectByParam(param).stream().map(c->joinBrandCarMap(c)).collect(Collectors.toList());
 		return result;
 	}

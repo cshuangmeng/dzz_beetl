@@ -72,7 +72,7 @@ public class PayClientBuilder {
 	@Value("${tencent_notify_url}")
 	public String TENCENT_NOTIFY_URL;
 	// 微信退款证书
-	@Value("${haotang_weixin_pay_cert}")
+	@Value("${tencent_weixin_pay_cert}")
 	public String TENCENT_PARTNER_CERT;
 	// 微信APP交易类型
 	@Value("${tencent_trade_type_app}")
