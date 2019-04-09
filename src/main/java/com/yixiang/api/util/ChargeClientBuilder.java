@@ -343,6 +343,9 @@ public class ChargeClientBuilder {
 	public String doPost(String url,Map<String,String> params) {
 		String responseStr=null;
 		try {
+			OkHttpClient.Builder builder=new OkHttpClient.Builder();
+			builder.retryOnConnectionFailure(true).connectTimeout(10, TimeUnit.SECONDS)
+				.readTimeout(300, TimeUnit.SECONDS).writeTimeout(300, TimeUnit.SECONDS);
 			FormBody.Builder body=new FormBody.Builder();
 			if(null!=params&&params.size()>0){
 				params.entrySet().stream().forEach(header->{
