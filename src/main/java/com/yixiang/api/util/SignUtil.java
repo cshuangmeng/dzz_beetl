@@ -15,6 +15,16 @@ import org.apache.commons.lang3.StringUtils;
 import com.feilong.core.CharsetType;
 
 public class SignUtil {
+	
+	public static void main(String[] args) {
+		try {
+			Map<String,Object> params=DataUtil.mapOf("station_id","6101130038101");
+			String sign=sign(params, Constants.MD5);
+			System.out.println(sign);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static String SHA1(String decript) {
 		try {

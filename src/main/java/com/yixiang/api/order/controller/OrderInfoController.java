@@ -68,7 +68,7 @@ public class OrderInfoController {
 	//获取账单
 	@RequestMapping("/bill")
 	public Result queryChargingBill(@RequestParam Integer orderId){
-		OrderInfo result=orderInfoComponent.queryChargingBill(orderId);
+		OrderInfo result=orderInfoComponent.queryChargingBill(orderId,true);
 		if(Result.noError()){
 			Result.putValue(result);
 		}

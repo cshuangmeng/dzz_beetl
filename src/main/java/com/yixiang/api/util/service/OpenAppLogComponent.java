@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,8 @@ public class OpenAppLogComponent {
 	private UserInfoComponent userInfoComponent;
 	@Autowired
 	private AreaInfoComponent areaInfoComponent;
+	
+	Logger logger=LoggerFactory.getLogger(getClass());
 
 	// 保存打开APP记录
 	@Transactional
@@ -52,6 +56,7 @@ public class OpenAppLogComponent {
 				if(log.getLat().floatValue()>0&&log.getLng().floatValue()>0){
 					String url=Redis.use().get("map_baidu_geocoder").toString()+log.getLat()+","+log.getLng();
 					JSONObject json=JSONObject.parseObject(HttpUtils.get(url));
+					logger.info(json.toJSONString());
 					Integer areaCode=json.getJSONObject("result").getJSONObject("addressComponent").getInteger("adcode");
 					AreaInfo area=areaInfoComponent.queryAreaInfoByAreaCode(areaCode);
 					if(null!=area){

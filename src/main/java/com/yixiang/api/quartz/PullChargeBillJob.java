@@ -12,21 +12,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.yixiang.api.order.service.OrderInfoComponent;
 
 @DisallowConcurrentExecution
-public class CheckChargingStateJob implements Job {
+public class PullChargeBillJob implements Job {
 	
 	@Autowired
 	private OrderInfoComponent orderInfoComponent;
 	
 	Logger log=LoggerFactory.getLogger(getClass());
 	
-	public CheckChargingStateJob(){}
+	public PullChargeBillJob(){}
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		String orderId=context.getJobDetail().getJobDataMap().getString("orderId");
 		if(StringUtils.isNotEmpty(orderId)){
-			log.info("调度任务:"+context.getJobDetail().getKey().getName()+"开始执行充电状态检查任务:orderId="+orderId);
-			orderInfoComponent.queryChargingState(Integer.valueOf(orderId), false);
+			log.info("调度任务:"+context.getJobDetail().getKey().getName()+"开始执行拉取充电账单任务:orderId="+orderId);
+			orderInfoComponent.queryChargingBill(Integer.valueOf(orderId), false);
 		}else{
 			log.info("调度任务:"+context.getJobDetail().getKey().getName()+"未获取到必要参数:orderId="+orderId);
 		}

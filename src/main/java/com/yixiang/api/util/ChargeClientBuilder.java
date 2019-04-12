@@ -1,5 +1,6 @@
 package com.yixiang.api.util;
 
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -89,9 +90,10 @@ public class ChargeClientBuilder {
 	private OkHttpClient getOkHttpClient(){
 		if(null==httpClient){
 	        httpClient = new okhttp3.OkHttpClient().newBuilder()
-	        		.connectTimeout(10, TimeUnit.SECONDS)
-	        		.writeTimeout(10, TimeUnit.SECONDS)
-	        		.readTimeout(30, TimeUnit.SECONDS)
+	        		.retryOnConnectionFailure(true)
+	        		.connectTimeout(60, TimeUnit.SECONDS)
+	        		.writeTimeout(60, TimeUnit.SECONDS)
+	        		.readTimeout(60, TimeUnit.SECONDS)
 	        		.build();
 		}
 		return httpClient;
@@ -238,20 +240,13 @@ public class ChargeClientBuilder {
 	//启动充电
 	public String startCharge(String stationId) {
 		try {
-			String time = String.valueOf(new Date().getTime()/1000);
-	        String nonceStr = DataUtil.createLetters(10);
-	        //公共参数
-	        Map<String,String> params=DataUtil.mapOf("appKey",APP_KEY,"time",time,"nonce_str",nonceStr,"appSecret",APP_SECRET);
-			log.info("签名字符串为："+SignUtil.getSignString(params));
-			String sign=SignUtil.sign(params, Constants.MD5);
-			log.info("签名为："+sign);
-			params.put("sign", sign);
+			String data="{\"scan_id\": \""+stationId+"\"}";
+			data=encrypt(data, DATA_SECRET, DATA_SECRET_IV);
 			//其他参数
-			Map<String,String> content=DataUtil.mapOf("partnerUserId", PARTNER_USER_ID, "ConnectorID", stationId);
-			params.remove("appSecret");
-			String url=QUERY_START_CHARGE_URL+"?"+ParamUtil.toQueryStringUseSingleValueMap(params);
+			Map<String,String> content=DataUtil.mapOf("data", URLEncoder.encode(data, "UTF-8"));
+			String url=QUERY_START_CHARGE_URL;
 			log.info("请求url为："+url+",body="+ParamUtil.toQueryStringUseSingleValueMap(content));
-			String data=doPost(url, content);
+			data=doPostRetry(url, content);
 			data=new UnicodeUnescaper().translate(data);
             log.info("响应内容为："+data);
             return data;
@@ -264,20 +259,13 @@ public class ChargeClientBuilder {
 	//结束充电
 	public String stopCharge(String chargeId) {
 		try {
-			String time = String.valueOf(new Date().getTime()/1000);
-	        String nonceStr = DataUtil.createLetters(10);
-	        //公共参数
-	        Map<String,String> params=DataUtil.mapOf("appKey",APP_KEY,"time",time,"nonce_str",nonceStr,"appSecret",APP_SECRET);
-			log.info("签名字符串为："+SignUtil.getSignString(params));
-			String sign=SignUtil.sign(params, Constants.MD5);
-			log.info("签名为："+sign);
-			params.put("sign", sign);
+			String data="{\"record_id\": \""+chargeId+"\"}";
+			data=encrypt(data, DATA_SECRET, DATA_SECRET_IV);
 			//其他参数
-			Map<String,String> content=DataUtil.mapOf("partnerUserId", PARTNER_USER_ID, "chargeId", chargeId);
-			params.remove("appSecret");
-			String url=QUERY_STOP_CHARGE_URL+"?"+ParamUtil.toQueryStringUseSingleValueMap(params);
+			Map<String,String> content=DataUtil.mapOf("data", URLEncoder.encode(data, "UTF-8"));
+			String url=QUERY_STOP_CHARGE_URL;
 			log.info("请求url为："+url+",body="+ParamUtil.toQueryStringUseSingleValueMap(content));
-			String data=doPost(url, content);
+			data=doPostRetry(url, content);
 			data=new UnicodeUnescaper().translate(data);
             log.info("响应内容为："+data);
             return data;
@@ -290,20 +278,13 @@ public class ChargeClientBuilder {
 	//充电状态查询
 	public String queryChargeState(String chargeId) {
 		try {
-			String time = String.valueOf(new Date().getTime()/1000);
-	        String nonceStr = DataUtil.createLetters(10);
-	        //公共参数
-	        Map<String,String> params=DataUtil.mapOf("appKey",APP_KEY,"time",time,"nonce_str",nonceStr,"appSecret",APP_SECRET);
-			log.info("签名字符串为："+SignUtil.getSignString(params));
-			String sign=SignUtil.sign(params, Constants.MD5);
-			log.info("签名为："+sign);
-			params.put("sign", sign);
+			String data="{\"record_id\": \""+chargeId+"\"}";
+			data=encrypt(data, DATA_SECRET, DATA_SECRET_IV);
 			//其他参数
-			Map<String,String> content=DataUtil.mapOf("partnerUserId", PARTNER_USER_ID, "chargeId", chargeId);
-			params.remove("appSecret");
-			String url=QUERY_EQUIP_CHARGE_STATUS_URL+"?"+ParamUtil.toQueryStringUseSingleValueMap(params);
+			Map<String,String> content=DataUtil.mapOf("data", URLEncoder.encode(data, "UTF-8"));
+			String url=QUERY_EQUIP_CHARGE_STATUS_URL;
 			log.info("请求url为："+url+",body="+ParamUtil.toQueryStringUseSingleValueMap(content));
-			String data=doPost(url, content);
+			data=doPost(url, content);
 			data=new UnicodeUnescaper().translate(data);
             log.info("响应内容为："+data);
             return data;
@@ -314,22 +295,15 @@ public class ChargeClientBuilder {
 	}
 	
 	//获取账单信息
-	public String checkChargeOrders(String billId) {
+	public String checkChargeOrders(String chargeId) {
 		try {
-			String time = String.valueOf(new Date().getTime()/1000);
-	        String nonceStr = DataUtil.createLetters(10);
-	        //公共参数
-	        Map<String,String> params=DataUtil.mapOf("appKey",APP_KEY,"time",time,"nonce_str",nonceStr,"appSecret",APP_SECRET);
-			log.info("签名字符串为："+SignUtil.getSignString(params));
-			String sign=SignUtil.sign(params, Constants.MD5);
-			log.info("签名为："+sign);
-			params.put("sign", sign);
+			String data="{\"record_id\": \""+chargeId+"\"}";
+			data=encrypt(data, DATA_SECRET, DATA_SECRET_IV);
 			//其他参数
-			Map<String,String> content=DataUtil.mapOf("partnerUserId", PARTNER_USER_ID, "bill_id", billId);
-			params.remove("appSecret");
-			String url=CHECK_CHARGE_ORDERS_URL+"?"+ParamUtil.toQueryStringUseSingleValueMap(params);
+			Map<String,String> content=DataUtil.mapOf("data", URLEncoder.encode(data, "UTF-8"));
+			String url=CHECK_CHARGE_ORDERS_URL;
 			log.info("请求url为："+url+",body="+ParamUtil.toQueryStringUseSingleValueMap(content));
-			String data=doPost(url, content);
+			data=doPost(url, content);
 			data=new UnicodeUnescaper().translate(data);
             log.info("响应内容为："+data);
             return data;
@@ -339,13 +313,37 @@ public class ChargeClientBuilder {
 		return null;
 	}
 	
+	//检查请求内容是否调用成功,否则进行重试
+	public String doPostRetry(String url,Map<String,String> content){
+		String response=null;
+		try {
+			response=doPost(url, content);
+			log.info("响应内容为："+response);
+			JSONObject json=DataUtil.isJSONObject(response)?JSONObject.parseObject(response):null;
+			if(null==json||DataUtil.isEmpty(json.get("success"))||!json.getBooleanValue("success")){
+				int interval=Integer.parseInt(Redis.use().get("dzz_retry_interval"));
+				int count=Integer.parseInt(Redis.use().get("dzz_retry_count"));
+				for(int i=1;i<=count;i++){
+					Thread.sleep(interval*1000);
+					log.info("开始重试第"+i+"次:"+url+":"+content);
+					response=doPost(url, content);
+					log.info("第"+i+"次重试的响应结果为:"+response);
+					json=DataUtil.isJSONObject(response)?JSONObject.parseObject(response):null;
+					if(null!=json&&!DataUtil.isEmpty(json.get("success"))&&json.getBooleanValue("success")){
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+	
 	//发送POST请求
 	public String doPost(String url,Map<String,String> params) {
 		String responseStr=null;
 		try {
-			OkHttpClient.Builder builder=new OkHttpClient.Builder();
-			builder.retryOnConnectionFailure(true).connectTimeout(10, TimeUnit.SECONDS)
-				.readTimeout(300, TimeUnit.SECONDS).writeTimeout(300, TimeUnit.SECONDS);
 			FormBody.Builder body=new FormBody.Builder();
 			if(null!=params&&params.size()>0){
 				params.entrySet().stream().forEach(header->{

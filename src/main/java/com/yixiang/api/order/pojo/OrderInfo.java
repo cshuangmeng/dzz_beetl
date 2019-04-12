@@ -306,7 +306,7 @@ public class OrderInfo {
 
 	// 充电状态
 	public static enum CHARGE_STATE_ENUM {
-		CHARGE_AUTH("chargeAuth"), CHARGE_START("chargeStart"), CHARGE_END("chargeEnd"), CHARGE_COMPLETE("chargeComplete");
+		CHARGE_AUTH("chargeAuth"), CHARGE_START("充电中"), CHARGE_END("chargeEnd"), CHARGE_COMPLETE("chargeComplete");
 		private String state;
 
 		private CHARGE_STATE_ENUM(String state) {

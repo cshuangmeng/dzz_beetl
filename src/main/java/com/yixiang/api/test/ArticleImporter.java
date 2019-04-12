@@ -94,7 +94,7 @@ public class ArticleImporter {
 		//readChargingStation();
 		//updateChargingStation();
 		//updateChargingStation1();
-		updateLngLatToAutonavi();
+		//updateLngLatToAutonavi();
 		//updateChargingStation2();
 	}
 	

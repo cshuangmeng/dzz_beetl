@@ -1,10 +1,8 @@
 package com.yixiang.api.order.controller;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +13,6 @@ import com.jfinal.plugin.redis.Redis;
 import com.yixiang.api.charging.service.ChargeOperatorComponent;
 import com.yixiang.api.charging.service.ChargingStationComponent;
 import com.yixiang.api.order.service.CouponInfoComponent;
-import com.yixiang.api.order.service.OrderInfoComponent;
 import com.yixiang.api.util.ChargeClientBuilder;
 import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.Result;
@@ -25,8 +22,6 @@ import com.yixiang.api.util.Result;
 public class OpenApiController {
 
 	@Autowired
-	private OrderInfoComponent orderInfoComponent;
-	@Autowired
 	private CouponInfoComponent couponInfoComponent;
 	@Autowired
 	private ChargingStationComponent chargingStationComponent;
@@ -34,17 +29,6 @@ public class OpenApiController {
 	private ChargeClientBuilder chargeClientBuilder;
 	@Autowired
 	private ChargeOperatorComponent chargeOperatorComponent;
-	
-	//聚能充回调充电账单
-	@RequestMapping("/nitfication_order")
-	public void syncChargingBill(HttpServletResponse response){
-		boolean result=orderInfoComponent.syncChargingBill();
-		try {
-			response.getWriter().print(result);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	//聚能充刷新AccessToken
 	@RequestMapping("/query_token")
