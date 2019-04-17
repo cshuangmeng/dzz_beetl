@@ -1,5 +1,10 @@
 package com.yixiang.api.util;
 
+import java.util.Date;
+
+import com.feilong.core.DatePattern;
+import com.feilong.core.date.DateUtil;
+
 public class Constants {
 
 	// 跨域访问域名
@@ -72,5 +77,7 @@ public class Constants {
 	public final static Integer NO = 0;
 	// 延迟若干秒执行调度任务
 	public final static Integer QUARTZ_JOB_DELAY = 10;
+	// 系统默认时间
+	public final static Date DEFAULT_DATE = DateUtil.toDate("2000-01-01", DatePattern.COMMON_DATE);
 
 }

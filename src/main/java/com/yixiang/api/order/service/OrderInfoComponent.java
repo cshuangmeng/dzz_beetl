@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.feilong.core.DatePattern;
 import com.feilong.core.date.DateUtil;
@@ -199,7 +200,8 @@ public class OrderInfoComponent {
 			ChargingStation station=chargingStationComponent.getChargingStation(order.getStationId());
 			result=DataUtil.mapOf("orderId",order.getId(),"state",order.getState(),"stationId",order.getStationId()
 					,"provider",order.getProvider(),"providerName",null!=station?station.getProvider():null
-					,"timeout",residualTime,"retry",Redis.use().get("order_charge_retry"),"unit",Redis.use().get("order_charge_unit"));
+					,"timeout",residualTime,"retry",Redis.use().get("order_charge_retry"),"unit",Redis.use().get("order_charge_unit")
+					,"interval",Redis.use().get("order_charge_interval"));
 		}
 		return result;
 	}
@@ -256,9 +258,12 @@ public class OrderInfoComponent {
 		//尝试获取桩信息
 		ConnectorInfo connectorInfo=connectorInfoComponent.getConnectorInfoByConnectorId(connectorId);
 		ChargingStation station=chargingStationComponent.getChargingStationByStationId(null!=connectorInfo?connectorInfo.getStationId():null);
+		order.setProvider(analyzeProvider(connectorId));
 		if(null!=station){
 			order.setConnectorId(connectorInfo.getId());
 			order.setStationId(station.getId());
+			order.setProvider(Integer.valueOf(station.getProviderId()));
+			order.setProviderName(station.getTitle());
 		}
 		orderInfoMapper.insertSelective(order);
 		//启动调度任务
@@ -267,8 +272,8 @@ public class OrderInfoComponent {
 			, Constants.STATE_GROUP_PREFIX+order.getId()).usingJobData(jobData).build();
 		taskService.updateCron(job, Redis.use().get("charge_appending_cron"));
 		return DataUtil.mapOf("orderId",order.getId(),"timeout",Integer.valueOf(Redis.use().get("order_charge_timeout"))
-				,"retry",Redis.use().get("order_charge_retry"),"unit",Redis.use().get("order_charge_unit")
-				,"interval",Redis.use().get("order_charge_interval"));
+				,"retry",Integer.valueOf(Redis.use().get("order_charge_retry")),"unit",Integer.valueOf(Redis.use().get("order_charge_unit"))
+				,"interval",Integer.valueOf(Redis.use().get("order_charge_interval")),"provider",order.getProvider());
 	}
 	
 	//查询充电状态
@@ -311,15 +316,9 @@ public class OrderInfoComponent {
 					, Constants.STATE_GROUP_PREFIX+order.getId(), String.format(Redis.use().get("charge_state_cron")
 					,DateUtil.getSecond(DateUtils.addSeconds(new Date(),Constants.QUARTZ_JOB_DELAY*2))));
 			}
-			//补充运营商信息
-			ChargingStation station=chargingStationComponent.getChargingStation(info.getStationId());
-			//国家电网的不收取服务费
-			if((null!=station&&station.getProviderId().equals(Constants.GJDW_PROVIDER_ID))){
-				info.setTotalServiceFee(0F);
-				info.setTotalPowerPrice(info.getTotalMoney());
-				info.setTotalPrice(info.getTotalPowerPrice());
-			}
 			info.setId(order.getId());
+			info.setProvider(null==info.getProvider()?order.getProvider():info.getProvider());
+			info.setState(order.getState());
 			if(order.getState().equals(OrderInfo.ORDER_STATE_ENUM.PENDING.getState())
 					||order.getState().equals(OrderInfo.ORDER_STATE_ENUM.CHARGING.getState())){
 				updateOrderInfo(info);
@@ -379,8 +378,7 @@ public class OrderInfoComponent {
 				return;
 			}
 			//更新订单状态
-			String endCode=!DataUtil.isEmpty(json.get("data"))?json.getJSONObject("data").getString("verify_code"):null;
-			updateOrderInfoState(order.getId(), endCode, OrderInfo.ORDER_STATE_ENUM.SETTLEMENT.getState());
+			updateOrderInfoState(order.getId(), null, OrderInfo.ORDER_STATE_ENUM.SETTLEMENT.getState());
 		}else{
 			log.info("订单在此状态下不支持结束充电,orderId="+order.getId()+",state="+order.getState());
 		}
@@ -426,15 +424,23 @@ public class OrderInfoComponent {
 		info.setStationId(order.getStationId());
 		//将订单状态置为待支付
 		states=Arrays.asList(OrderInfo.ORDER_STATE_ENUM.CHARGING.getState(),OrderInfo.ORDER_STATE_ENUM.SETTLEMENT.getState());
-		if(states.contains(order.getState())){
-			info.setState(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState());
-			//取消调度任务
-			taskService.deleteJob(Constants.STATE_JOB_PREFIX+order.getId(), Constants.STATE_GROUP_PREFIX+order.getId());
-			taskService.deleteJob(Constants.BILL_JOB_PREFIX+order.getId(), Constants.BILL_GROUP_PREFIX+order.getId());
+		if(states.contains(order.getState())&&info.getEndTime().compareTo(Constants.DEFAULT_DATE)>0){
+			//检查是否已结束充电
+			String response=chargeClientBuilder.queryChargeState(order.getChargeId());
+			JSONObject json=DataUtil.isJSONObject(response)?JSONObject.parseObject(response):null;
+			if(null!=json&&!DataUtil.isEmpty(json.get("success"))&&!json.getBooleanValue("success")
+					&&!DataUtil.isEmpty(json.get("msg"))&&json.getString("msg").equals(Redis.use().get("stop_charge_tip"))){
+				log.info("未获取到充电数据,充电结束,response="+response);
+				info.setState(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState());
+				info.setId(order.getId());
+				updateOrderInfo(info);
+				//取消调度任务
+				taskService.deleteJob(Constants.STATE_JOB_PREFIX+order.getId(), Constants.STATE_GROUP_PREFIX+order.getId());
+				taskService.deleteJob(Constants.BILL_JOB_PREFIX+order.getId(), Constants.BILL_GROUP_PREFIX+order.getId());
+				return info;
+			}
 		}
-		info.setId(order.getId());
-		updateOrderInfo(info);
-		return info;
+		return null;
 	}
 	
 	//获取我的充电订单列表
@@ -451,7 +457,7 @@ public class OrderInfoComponent {
 		List<Map<Object,Object>> result=queryOrders(user.getId(), states, offset, limit).stream().map(o->{
 			ChargingStation station=chargingStationComponent.getChargingStation(o.getStationId());
 			return DataUtil.mapOf("stationName",null!=station?station.getTitle():null,"startTime",o.getStartTime(),"endTime",o.getEndTime()
-					,"totalPower",o.getTotalPower(),"totalPrice",o.getTotalPrice(),"totalTime",o.getTotalTime()
+					,"totalPower",o.getTotalPower(),"totalPrice",o.getTotalPrice(),"totalTime",convertMinsToDesc(o.getTotalTime())
 					,"id",o.getId(),"state",o.getState(),"payPrice",o.getPayPrice());
 		}).collect(Collectors.toList());
 		return DataUtil.mapOf("dataset",result);
@@ -466,14 +472,14 @@ public class OrderInfoComponent {
 		}
 		String response=chargeClientBuilder.queryChargeState(chargeId);
 		JSONObject json=DataUtil.isJSONObject(response)?JSONObject.parseObject(response):null;
-		if(null==json){
+		if(null==json||DataUtil.isEmpty(json.get("success"))){
 			log.info("查询充电状态请求失败,response="+response);
 			Result.putValue(ResponseCode.CodeEnum.FAIL);
 			return null;
 		}
-		if(DataUtil.isEmpty(json.get("success"))||!json.getBooleanValue("success")){
+		if(!json.getBooleanValue("success")){
 			log.info("查询充电状态失败,response="+response);
-			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
+			Result.putValue(ResponseCode.CodeEnum.CHARGE_SERVICE_STOPPED);
 			return null;
 		}
 		json=json.getJSONObject("data");
@@ -494,7 +500,7 @@ public class OrderInfoComponent {
 		order.setTotalPrice(DataUtil.round(order.getTotalPowerPrice()+order.getTotalServiceFee(), 2));
 		order.setStartTime(new Date(json.getLong("start_time")*1000));
 		order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
-		order.setEndCode(json.getString("code"));
+		order.setEndCode(json.getString("stop_code"));
 		order.setSoc(json.getString("soc"));
 		order.setPower(json.getFloat("voltage"));
 		return order;
@@ -543,6 +549,33 @@ public class OrderInfoComponent {
 		}else{
 			return code;
 		}
+	}
+	
+	//解析桩企
+	public Integer analyzeProvider(String code){
+		//特来电
+		JSONArray array=JSONArray.parseArray(Redis.use().get("station_providers"));
+		for(int i=0;i<array.size();i++){
+			JSONObject json=array.getJSONObject(i);
+			if(json.getInteger("length").equals(code.length())){
+				return json.getInteger("provider");
+			}
+		}
+		return null;
+	}
+	
+	//将分钟转换成文字描述
+	public static String convertMinsToDesc(int secs) {
+		StringBuffer str = new StringBuffer();
+		int days = secs / (24 * 60 * 60);
+		str.append(days + "天");
+		int hours = (secs % (24 * 60 * 60)) / (60 * 60);
+		str.append(hours + "小时");
+		int minutes= ((secs % (24 * 60 * 60)) % (60 * 60)) / 60;
+		str.append(minutes + "分钟");
+		secs = ((secs % (24 * 60 * 60)) % (60 * 60)) % 60;
+		str.append(secs + "秒");
+		return str.toString();
 	}
 	
 	//删除充电超时订单

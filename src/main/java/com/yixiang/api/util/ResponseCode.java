@@ -48,6 +48,7 @@ public class ResponseCode {
 		ORDER_NOT_MINE(220004, "不能操作非本人的订单"),
 		PAY_PRICE_INCORRECT(220005, "订单应付金额不正确"),
 		CHARGE_SERVICE_UNAVAILABLE(220006, "充电服务暂不可用"),
+		CHARGE_SERVICE_STOPPED(220007, "充电已停止"),
 		
 		// 文章
 		ARTICLE_NOT_EXISTS(300001, "文章信息不存在"),
