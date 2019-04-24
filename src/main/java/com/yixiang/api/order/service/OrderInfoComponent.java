@@ -243,15 +243,14 @@ public class OrderInfoComponent {
 			Result.putValue(ResponseCode.CodeEnum.FAIL);
 			return null;
 		}
-		if(DataUtil.isEmpty(json.get("success"))||!json.getBooleanValue("success")){
-			log.info("启动充电失败,response="+response);
-			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
-			return null;
-		}
+		boolean success=!DataUtil.isEmpty(json.get("success"))&&json.getBooleanValue("success");
 		//保存订单
 		OrderInfo order=new OrderInfo();
 		order.setConnectorCode(code);
-		order.setChargeId(json.getJSONObject("data").getString("charge_id"));
+		if(!DataUtil.isEmpty(json.get("data"))&&DataUtil.isJSONObject(json.get("data").toString())
+				&&!DataUtil.isEmpty(json.getJSONObject("data").get("charge_id"))){
+			order.setChargeId(json.getJSONObject("data").getString("charge_id"));
+		}
 		order.setCreateTime(new Date());
 		order.setUserId(user.getId());
 		order.setTradeNo(DateUtil.toString(new Date(), DatePattern.TIMESTAMP_WITH_MILLISECOND)+DataUtil.createNums(3));
@@ -267,13 +266,20 @@ public class OrderInfoComponent {
 		}
 		orderInfoMapper.insertSelective(order);
 		//启动调度任务
-		JobDataMap jobData=JobDataMapSupport.newJobDataMap(DataUtil.mapOf("orderId",String.valueOf(order.getId())));
-		JobDetail job = JobBuilder.newJob(CheckChargingStateJob.class).withIdentity(Constants.STATE_JOB_PREFIX+order.getId()
-			, Constants.STATE_GROUP_PREFIX+order.getId()).usingJobData(jobData).build();
-		taskService.updateCron(job, Redis.use().get("charge_appending_cron"));
-		return DataUtil.mapOf("orderId",order.getId(),"timeout",Integer.valueOf(Redis.use().get("order_charge_timeout"))
-				,"retry",Integer.valueOf(Redis.use().get("order_charge_retry")),"unit",Integer.valueOf(Redis.use().get("order_charge_unit"))
-				,"interval",Integer.valueOf(Redis.use().get("order_charge_interval")),"provider",order.getProvider());
+		Map<String,Object> result=null;
+		if(success){
+			JobDataMap jobData=JobDataMapSupport.newJobDataMap(DataUtil.mapOf("orderId",String.valueOf(order.getId())));
+			JobDetail job = JobBuilder.newJob(CheckChargingStateJob.class).withIdentity(Constants.STATE_JOB_PREFIX+order.getId()
+				, Constants.STATE_GROUP_PREFIX+order.getId()).usingJobData(jobData).build();
+			taskService.updateCron(job, Redis.use().get("charge_appending_cron"));
+			result=DataUtil.mapOf("orderId",order.getId(),"timeout",Integer.valueOf(Redis.use().get("order_charge_timeout"))
+					,"retry",Integer.valueOf(Redis.use().get("order_charge_retry")),"unit",Integer.valueOf(Redis.use().get("order_charge_unit"))
+					,"interval",Integer.valueOf(Redis.use().get("order_charge_interval")),"provider",order.getProvider());
+		}else{
+			log.info("启动充电失败,response="+response);
+			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
+		}
+		return result;
 	}
 	
 	//查询充电状态
