@@ -251,6 +251,7 @@ public class OrderInfoComponent {
 				&&!DataUtil.isEmpty(json.getJSONObject("data").get("charge_id"))){
 			order.setChargeId(json.getJSONObject("data").getString("charge_id"));
 		}
+		order.setChargeState(!DataUtil.isEmpty(json.get("msg"))?json.getString("msg"):null);
 		order.setCreateTime(new Date());
 		order.setUserId(user.getId());
 		order.setTradeNo(DateUtil.toString(new Date(), DatePattern.TIMESTAMP_WITH_MILLISECOND)+DataUtil.createNums(3));
