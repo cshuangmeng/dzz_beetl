@@ -379,8 +379,7 @@ public class PayClientBuilder {
 						resultMap.put("nonceStr", DataUtil.createLetters(32));
 						resultMap.put("timeStamp", String.valueOf(new Date().getTime() / 1000));
 						resultMap.put("signType", "MD5");
-						resultMap.put("paySign",
-								SignUtil.signValue(resultMap, "MD5", TENCENT_PARTNER_KEY).toUpperCase());
+						resultMap.put("paySign",SignUtil.signValue(resultMap, "MD5", TENCENT_PARTNER_KEY).toUpperCase());
 					}
 				}
 			}

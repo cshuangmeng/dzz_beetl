@@ -62,6 +62,7 @@ public class RechargeInfoComponent {
 	//生成充值请求
 	@Transactional
 	public Map<String,Object> buildRechargeRequest(Integer templateId,Integer payWay){
+		Map<String,Object> http=ThreadCache.getHttpData();
 		UserInfo user=(UserInfo)ThreadCache.getData(Constants.USER);
 		//检查充值模板是否可用
 		RechargeTemplate template=rechargeTemplateComponent.getRechargeTemplate(templateId);
@@ -87,10 +88,11 @@ public class RechargeInfoComponent {
 		rechargeInfoMapper.insertSelective(info);
 		//组装支付信息
 		Integer orderType=RefundSummary.ORDER_TYPE_ENUM.RECHARGE.getType();
+		String openId=!DataUtil.isEmpty(http.get(Constants.WXOPENID))?http.get(http.get(Constants.WXOPENID)).toString():null;
 		JSONObject json=JSONArray.parseArray(Redis.use().get("pay_type_config")).getJSONObject(orderType-1);
 		Map<String,Object> payInfo=payClientBuilder.prepay(info.getPayWay(), info.getTradeNo(), info.getPrice()
 				, json.getString("title"), json.getString("body"), String.valueOf(orderType)
-				, ThreadCache.getData(Constants.IP).toString(), null);
+				, ThreadCache.getData(Constants.IP).toString(), openId);
 		return DataUtil.mapOf("payInfo",payInfo);
 	}
 	
