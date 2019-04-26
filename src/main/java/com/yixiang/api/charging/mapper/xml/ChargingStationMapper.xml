@@ -86,6 +86,12 @@
   		<if test="null!=param.source">
   			and t.source=#{param.source}
   		</if>
+  		<if test="null!=param.providers and param.providers.size()>0">
+  			and t.provider_id in
+  			<foreach collection="param.providers" item="provider" open="(" separator="," close=")">
+  				#{provider}
+  			</foreach>
+  		</if>
   		<if test="null!=param.userStation">
 	  		<choose>
 	  			<when test="param.userStation">

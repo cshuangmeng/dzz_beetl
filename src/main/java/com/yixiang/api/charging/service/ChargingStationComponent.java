@@ -200,8 +200,16 @@ public class ChargingStationComponent {
 	public List<Map<Object,Object>> queryNearbyStations(BigDecimal lng,BigDecimal lat,Boolean userStation
 			,Integer page,boolean isActive){
 		JSONObject json=JSONObject.parseObject(Redis.use().get("home_nearby_station_config"));
+		List<Integer> providers=null;
+		if(!isActive){
+			JSONObject home=JSONObject.parseObject(Redis.use().get("home_config"));
+			if(!DataUtil.isEmpty(home.get("recommend_providers"))){
+				providers=Arrays.asList(home.getString("recommend_providers").split(","))
+						.stream().map(i->Integer.valueOf(i)).collect(Collectors.toList());
+			}
+		}
 		List<ChargingStation> stations=queryChargingStations(DataUtil.mapOf("nearby",json.getInteger("distance")
-				,"lng",lng.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
+				,"lng",lng.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue(),"providers",providers
 				,"lat",lat.setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
 				,"state",ChargingStation.STATION_STATE_ENUM.ENABLED.getState()
 				,"userStation",userStation,"offset",(page-1)*json.getInteger(isActive?"list_size":"home_size")
