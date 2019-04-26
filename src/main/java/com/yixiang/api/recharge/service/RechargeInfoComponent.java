@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ import com.yixiang.api.util.PayClientBuilder;
 import com.yixiang.api.util.ResponseCode;
 import com.yixiang.api.util.Result;
 import com.yixiang.api.util.ThreadCache;
+import com.yixiang.api.util.pojo.PayInfo;
 import com.yixiang.api.util.pojo.QueryExample;
 
 @Service
@@ -63,6 +65,7 @@ public class RechargeInfoComponent {
 	@Transactional
 	public Map<String,Object> buildRechargeRequest(Integer templateId,Integer payWay){
 		Map<String,Object> http=ThreadCache.getHttpData();
+		String openId=!DataUtil.isEmpty(http.get(Constants.WXOPENID))?http.get(Constants.WXOPENID).toString():null;
 		UserInfo user=(UserInfo)ThreadCache.getData(Constants.USER);
 		//检查充值模板是否可用
 		RechargeTemplate template=rechargeTemplateComponent.getRechargeTemplate(templateId);
@@ -78,6 +81,8 @@ public class RechargeInfoComponent {
 		}
 		//保存充值请求
 		RechargeInfo info=new RechargeInfo();
+		info.setAccount(PayInfo.SELLER_ACCOUNT_ENUM.DZZ.getAccount());
+		info.setSource(StringUtils.isNotBlank(openId)?PayInfo.ACCOUNT_SOURCE_ENUM.MINI.getSource():PayInfo.ACCOUNT_SOURCE_ENUM.APP.getSource());
 		info.setBonus(template.getBonus());
 		info.setCreateTime(new Date());
 		info.setPayWay(payWay);
@@ -88,11 +93,17 @@ public class RechargeInfoComponent {
 		rechargeInfoMapper.insertSelective(info);
 		//组装支付信息
 		Integer orderType=RefundSummary.ORDER_TYPE_ENUM.RECHARGE.getType();
-		String openId=!DataUtil.isEmpty(http.get(Constants.WXOPENID))?http.get(http.get(Constants.WXOPENID)).toString():null;
 		JSONObject json=JSONArray.parseArray(Redis.use().get("pay_type_config")).getJSONObject(orderType-1);
-		Map<String,Object> payInfo=payClientBuilder.prepay(info.getPayWay(), info.getTradeNo(), info.getPrice()
-				, json.getString("title"), json.getString("body"), String.valueOf(orderType)
-				, ThreadCache.getData(Constants.IP).toString(), openId);
+		PayInfo pay=PayInfo.create().initSellerAccount(info.getPayWay(), info.getAccount(), info.getSource());
+		pay.setPayWay(info.getPayWay());
+		pay.setTradeNo(info.getTradeNo());
+		pay.setAmount(info.getPrice());
+		pay.setSubject(json.getString("title"));
+		pay.setBody(json.getString("body"));
+		pay.setOpenId(openId);
+		pay.setAttach(orderType+","+info.getAccount()+","+info.getSource());
+		pay.setIp(ThreadCache.getData(Constants.IP).toString());
+		Map<String,Object> payInfo=payClientBuilder.prepay(pay);
 		return DataUtil.mapOf("payInfo",payInfo);
 	}
 	
@@ -136,12 +147,20 @@ public class RechargeInfoComponent {
 	//退款充值
 	@Transactional
 	public Map<String,Object> refundRecharge(String reason){
-		//锁定用户信息
 		UserInfo user=ThreadCache.getCurrentUserInfo();
+		//检查退款功能是否开启
+		JSONObject json=JSONObject.parseObject(Redis.use().get("recharge_refund_config"));
+		if(!json.getBooleanValue("switch")){
+			log.info("退款功能未开放,userId="+user.getId()+",reason="+reason);
+			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("tip"),null);
+			return null;
+		}
+		//锁定用户信息
 		user=userInfoComponent.getUserInfo(user.getId(), true);
 		//计算应退金额,积分墙兑换的余额不退
-		float jfqPrice=couponInfoComponent.getUserCoupons(user.getId(), CouponInfo.COUPON_CATEGORY_ENUM.RECHARGE.getCategory())
-				.stream().map(i->i.getAmount()).reduce((a,b)->a+b).get();
+		Optional<Float> ip=couponInfoComponent.getUserCoupons(user.getId(), CouponInfo.COUPON_CATEGORY_ENUM.RECHARGE.getCategory())
+				.stream().map(i->i.getAmount()).reduce((a,b)->a+b);
+		float jfqPrice=ip.isPresent()?ip.get():0;
 		float refundPrice=user.getBalance().subtract(new BigDecimal(jfqPrice)).setScale(2, BigDecimal.ROUND_HALF_UP).floatValue();
 		List<RechargeInfo> recharges=null;
 		if(refundPrice>0){
@@ -185,8 +204,8 @@ public class RechargeInfoComponent {
 				}
 				//记录流水
 				history=tradeHistoryComponent.saveTradeHistory(user.getId(), o.getId(), tradeType, -third, null, null);
-				refundInfoComponent.saveRefundInfo(user.getId(), o.getId(), orderType, third, 0F, o.getOutTradeNo()
-						, o.getPayWay(), reason, null, history.getId());
+				refundInfoComponent.saveRefundInfo(o.getAccount(),o.getSource(),user.getId(), o.getId(), orderType
+						, third, 0F, o.getOutTradeNo(), o.getPayWay(), reason, null, history.getId());
 				refundSummaryComponent.updateRefundSummary(summary);
 				updateRechargeInfoState(o.getId(), null, RechargeInfo.STATE_TYPE_ENUM.REFUNDED.getState());
 			}
@@ -194,7 +213,7 @@ public class RechargeInfoComponent {
 				break;
 			}
 		}
-		JSONObject json=JSONObject.parseObject(Redis.use().get("refund_submit_remind"));
+		json=JSONObject.parseObject(Redis.use().get("refund_submit_remind"));
 		return DataUtil.mapOf("desc",String.format(json.getString("remind")
 				, DateUtil.toString(new Date(), json.getString("remind_date_pattern"))));
 	}

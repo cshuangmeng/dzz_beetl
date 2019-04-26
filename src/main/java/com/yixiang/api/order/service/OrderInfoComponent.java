@@ -435,8 +435,7 @@ public class OrderInfoComponent {
 			//检查是否已结束充电
 			String response=chargeClientBuilder.queryChargeState(order.getChargeId());
 			JSONObject json=DataUtil.isJSONObject(response)?JSONObject.parseObject(response):null;
-			if(null!=json&&!DataUtil.isEmpty(json.get("success"))&&!json.getBooleanValue("success")
-					&&!DataUtil.isEmpty(json.get("msg"))&&json.getString("msg").equals(Redis.use().get("stop_charge_tip"))){
+			if(null!=json&&!DataUtil.isEmpty(json.get("success"))&&!json.getBooleanValue("success")){
 				log.info("未获取到充电数据,充电结束,response="+response);
 				info.setState(OrderInfo.ORDER_STATE_ENUM.NO_PAY.getState());
 				info.setId(order.getId());

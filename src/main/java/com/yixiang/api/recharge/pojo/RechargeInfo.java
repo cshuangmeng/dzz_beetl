@@ -5,6 +5,8 @@ import java.util.Date;
 public class RechargeInfo {
 
 	private Integer id;
+	private Integer account;
+	private Integer source;
 	private Integer userId;
 	private Integer templateId;
 	private Float price;
@@ -23,6 +25,22 @@ public class RechargeInfo {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public Integer getAccount() {
+		return account;
+	}
+
+	public void setAccount(Integer account) {
+		this.account = account;
+	}
+
+	public Integer getSource() {
+		return source;
+	}
+
+	public void setSource(Integer source) {
+		this.source = source;
 	}
 
 	public Integer getUserId() {

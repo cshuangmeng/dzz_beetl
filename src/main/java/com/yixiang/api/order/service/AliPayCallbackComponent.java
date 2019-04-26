@@ -17,19 +17,17 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.yixiang.api.recharge.service.RechargeInfoComponent;
 import com.yixiang.api.refund.pojo.RefundSummary;
 import com.yixiang.api.util.Constants;
-import com.yixiang.api.util.PayClientBuilder;
+import com.yixiang.api.util.pojo.PayInfo;
 
 @Service
 public class AliPayCallbackComponent {
 
 	@Autowired
 	private RechargeInfoComponent rechargeInfoComponent;
-	@Autowired
-	private PayClientBuilder payClientBuilder;
 	
 	private static Logger log = LoggerFactory.getLogger(AliPayCallbackComponent.class);
 	
-	//微信支付成功回调
+	//支付宝支付成功回调
 	public String operatePaySuccess(HttpServletRequest request){
 		try {
 			//验证交易是否成功
@@ -43,16 +41,18 @@ public class AliPayCallbackComponent {
 	                params.put(pName, request.getParameter(pName));
 	            }
 	            //校验签名是否正确
-	            boolean signVerified = AlipaySignature.rsaCheckV1(params, payClientBuilder.ALIPAY_PUBLIC_KEY,Constants.UTF8,Constants.RSA2);
+	            String[] datas=params.get("passback_params").toString().split(",");
+	            PayInfo info=PayInfo.create().initSellerAccount(Constants.ALIPAY, Integer.valueOf(datas[1]), Integer.valueOf(datas[2]));
+	            boolean signVerified = AlipaySignature.rsaCheckV1(params, info.getAlipayPublicKey(),Constants.UTF8,Constants.RSA2);
 	            log.info("接收到支付宝支付回调请求,校验结果:"+signVerified+",params="+JSONObject.toJSONString(params));
 	            if(signVerified){
 	            	String tradeNo=params.get("out_trade_no").toString();
 	            	String outTradeNo=params.get("trade_no").toString();
 	            	Float totalFee=Float.valueOf(params.get("total_amount").toString());
-	            	Integer orderType=Integer.valueOf(params.get("passback_params").toString().split(",")[0]);
+	            	Integer orderType=Integer.valueOf(datas[0]);
 					//判断订单类型执行相应的回调处理流程
 					if(orderType.equals(RefundSummary.ORDER_TYPE_ENUM.RECHARGE.getType())){//充值
-						rechargeInfoComponent.paySuccessCallback(tradeNo,outTradeNo, totalFee);
+						rechargeInfoComponent.paySuccessCallback(tradeNo,outTradeNo,totalFee);
 	            	}
 	            	log.info("订单回调处理成功,trade_no="+tradeNo+",out_trade_no="+outTradeNo+",total_fee="+totalFee);
 					return "success";

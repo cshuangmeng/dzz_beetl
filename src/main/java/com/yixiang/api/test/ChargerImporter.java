@@ -40,6 +40,7 @@ import com.yixiang.api.main.Application;
 import com.yixiang.api.util.ChargeClientBuilder;
 import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
+import com.yixiang.api.util.PayClientBuilder;
 import com.yixiang.api.util.mapper.AreaInfoMapper;
 import com.yixiang.api.util.pojo.AreaInfo;
 import com.yixiang.api.util.pojo.QueryExample;
@@ -55,6 +56,8 @@ public class ChargerImporter {
 	@Autowired
 	private ChargingStationComponent chargingStationComponent;
 	@Autowired
+	private PayClientBuilder payClientBuilder;
+	@Autowired
 	private BrandInfoComponent brandInfoComponent;
 	@Autowired
 	private ChargeClientBuilder chargeClientBuilder;
@@ -66,9 +69,7 @@ public class ChargerImporter {
 	@Test
 	public void test(){
 		try {
-			String row=chargeClientBuilder.queryStationSingleStatus("38E48163-7304-1F55-BE01-8B23E2349626");
-			System.out.println(row);
-			//test6();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

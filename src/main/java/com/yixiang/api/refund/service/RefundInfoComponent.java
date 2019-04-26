@@ -20,6 +20,7 @@ import com.yixiang.api.refund.pojo.RefundSummary;
 import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
 import com.yixiang.api.util.PayClientBuilder;
+import com.yixiang.api.util.pojo.PayInfo;
 import com.yixiang.api.util.pojo.QueryExample;
 
 @Service
@@ -42,14 +43,24 @@ public class RefundInfoComponent {
 		refunds.stream().forEach(o->{
 			RefundSummary summary=refundSummaryComponent.getRefundSummary(o.getOrderId(), o.getOrderType());
 			if(null!=summary){
-				String response=payClientBuilder.refund(o.getPayWay(), o.getOutTradeNo(), summary.getThird()
-						, o.getThirdPrice(), o.getRemark(), o.getTradeNo());
+				//执行退款请求
+				PayInfo pay=PayInfo.create().initSellerAccount(o.getPayWay(), o.getAccount(), o.getSource());
+				pay.setPayWay(o.getPayWay());
+				pay.setOutTradeNo(o.getOutTradeNo());
+				pay.setAmount(summary.getThird());
+				pay.setRefundFee(o.getThirdPrice());
+				pay.setRefundReason(o.getRemark());
+				pay.setRefundNo(o.getTradeNo());
+				String response=payClientBuilder.refund(pay);
+				//检查退款请求状态
 				if(response.equalsIgnoreCase(Constants.SUCCESS)){
 					o.setState(RefundInfo.REFUND_STATE_ENUM.CHULIZHONG.getState());
 					//更新流水记录状态
 					TradeHistory history=tradeHistoryComponent.getTradeHistory(o.getTradeHistoryId());
 					history.setState(TradeHistory.TRADE_STATE_ENUM.CHULIZHONG.getState());
 					tradeHistoryComponent.updateTradeHistory(history);
+				}else{
+					o.setState(RefundInfo.REFUND_STATE_ENUM.ZANTING.getState());
 				}
 				o.setResponse(response);
 				o.setUpdateTime(new Date());
@@ -65,7 +76,12 @@ public class RefundInfoComponent {
 	public void checkRefund(){
 		List<RefundInfo> refunds=queryRefundInfos(RefundInfo.REFUND_STATE_ENUM.CHULIZHONG.getState());
 		refunds.stream().forEach(o->{
-			JSONObject json=payClientBuilder.refundQuery(o.getPayWay(), o.getOutTradeNo(), o.getTradeNo());
+			//检查退款请求状态
+			PayInfo pay=PayInfo.create().initSellerAccount(o.getPayWay(), o.getAccount(), o.getSource());
+			pay.setPayWay(o.getPayWay());
+			pay.setOutTradeNo(o.getOutTradeNo());
+			pay.setRefundNo(o.getTradeNo());
+			JSONObject json=payClientBuilder.refundQuery(pay);
 			String state=Constants.FAIL;
 			if(o.getPayWay().equals(Constants.WEIXINPAY)){
 				state=json.getString("refund_status_0");
@@ -89,9 +105,11 @@ public class RefundInfoComponent {
 	
 	//保存退款信息
 	@Transactional
-	public void saveRefundInfo(Integer userId,Integer orderId,Integer orderType,Float third,Float balance
-			,String outTradeNo,Integer payWay,String reason,Integer state,Integer tradeHistoryId){
+	public void saveRefundInfo(Integer account,Integer source,Integer userId,Integer orderId,Integer orderType
+			,Float third,Float balance,String outTradeNo,Integer payWay,String reason,Integer state,Integer tradeHistoryId){
 		RefundInfo refund=new RefundInfo();
+		refund.setAccount(account);
+		refund.setSource(source);
 		refund.setBalancePrice(null!=balance?balance:0);
 		refund.setCreateTime(new Date());
 		refund.setOrderId(orderId);
