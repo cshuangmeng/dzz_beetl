@@ -265,6 +265,10 @@ public class OrderInfoComponent {
 			order.setProvider(Integer.valueOf(station.getProviderId()));
 			order.setProviderName(station.getTitle());
 		}
+		if(!success){
+			order.setState(OrderInfo.ORDER_STATE_ENUM.CANCEL.getState());
+		}
+		orderInfoMapper.insertSelective(order);
 		//启动调度任务
 		Map<String,Object> result=null;
 		if(success){
@@ -276,11 +280,9 @@ public class OrderInfoComponent {
 					,"retry",Integer.valueOf(Redis.use().get("order_charge_retry")),"unit",Integer.valueOf(Redis.use().get("order_charge_unit"))
 					,"interval",Integer.valueOf(Redis.use().get("order_charge_interval")),"provider",order.getProvider());
 		}else{
-			order.setState(OrderInfo.ORDER_STATE_ENUM.CANCEL.getState());
 			log.info("启动充电失败,response="+response);
 			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
 		}
-		orderInfoMapper.insertSelective(order);
 		return result;
 	}
 	
@@ -490,7 +492,6 @@ public class OrderInfoComponent {
 			return null;
 		}
 		json=json.getJSONObject("data");
-		float serviceFee=Float.parseFloat(Redis.use().get("charging_service_fee"));
 		ConnectorInfo connector=connectorInfoComponent.getConnectorInfoByConnectorId(json.getString("charge_pile_id"));
 		ChargingStation station=chargingStationComponent.getChargingStationByStationId(json.getString("sta_id"));
 		OrderInfo order=new OrderInfo();
@@ -503,7 +504,7 @@ public class OrderInfoComponent {
 		order.setCurrent(null!=json.getFloat("galvanic")?json.getFloat("galvanic"):0);
 		order.setTotalPowerPrice(null!=json.getFloat("electric_money")?json.getFloat("electric_money"):0);
 		order.setTotalPower(null!=json.getFloat("charge_electric")?json.getFloat("charge_electric"):0);
-		order.setTotalServiceFee(DataUtil.round(order.getTotalPower()*serviceFee, 2));
+		order.setTotalServiceFee(null!=json.getFloat("service_money")?json.getFloat("service_money"):0);
 		order.setTotalPrice(DataUtil.round(order.getTotalPowerPrice()+order.getTotalServiceFee(), 2));
 		order.setStartTime(new Date(json.getLong("start_time")*1000));
 		order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
@@ -532,13 +533,12 @@ public class OrderInfoComponent {
 			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
 			return null;
 		}
-		float serviceFee=Float.parseFloat(Redis.use().get("charging_service_fee"));
 		json=json.getJSONObject("data");
 		OrderInfo order=new OrderInfo();
 		order.setChargeId(chargeId);
 		order.setTotalPowerPrice(null!=json.getFloat("electric_money")?json.getFloat("electric_money"):0);
 		order.setTotalPower(null!=json.getFloat("total_power")?json.getFloat("total_power"):0);
-		order.setTotalServiceFee(DataUtil.round(order.getTotalPower()*serviceFee, 2));
+		order.setTotalServiceFee(null!=json.getFloat("service_money")?json.getFloat("service_money"):0);
 		order.setTotalPrice(DataUtil.round(order.getTotalPowerPrice()+order.getTotalServiceFee(), 2));
 		order.setStartTime(new Date(json.getLong("start_time")*1000));
 		order.setEndTime(new Date(json.getLong("stop_time")*1000));
