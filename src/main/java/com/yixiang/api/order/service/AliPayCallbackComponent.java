@@ -1,5 +1,6 @@
 package com.yixiang.api.order.service;
 
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class AliPayCallbackComponent {
 	                params.put(pName, request.getParameter(pName));
 	            }
 	            //校验签名是否正确
-	            String[] datas=params.get("passback_params").toString().split(",");
+	            String[] datas=URLDecoder.decode(params.get("passback_params").toString(), Constants.UTF8).split(",");
 	            PayInfo info=PayInfo.create().initSellerAccount(Constants.ALIPAY, Integer.valueOf(datas[1]), Integer.valueOf(datas[2]));
 	            boolean signVerified = AlipaySignature.rsaCheckV1(params, info.getAlipayPublicKey(),Constants.UTF8,Constants.RSA2);
 	            log.info("接收到支付宝支付回调请求,校验结果:"+signVerified+",params="+JSONObject.toJSONString(params));

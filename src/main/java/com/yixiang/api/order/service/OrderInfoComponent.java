@@ -265,7 +265,6 @@ public class OrderInfoComponent {
 			order.setProvider(Integer.valueOf(station.getProviderId()));
 			order.setProviderName(station.getTitle());
 		}
-		orderInfoMapper.insertSelective(order);
 		//启动调度任务
 		Map<String,Object> result=null;
 		if(success){
@@ -277,9 +276,11 @@ public class OrderInfoComponent {
 					,"retry",Integer.valueOf(Redis.use().get("order_charge_retry")),"unit",Integer.valueOf(Redis.use().get("order_charge_unit"))
 					,"interval",Integer.valueOf(Redis.use().get("order_charge_interval")),"provider",order.getProvider());
 		}else{
+			order.setState(OrderInfo.ORDER_STATE_ENUM.CANCEL.getState());
 			log.info("启动充电失败,response="+response);
 			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("msg"),Constants.EMPTY);
 		}
+		orderInfoMapper.insertSelective(order);
 		return result;
 	}
 	

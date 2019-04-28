@@ -37,6 +37,7 @@ import com.yixiang.api.brand.service.BrandInfoComponent;
 import com.yixiang.api.charging.pojo.ChargingStation;
 import com.yixiang.api.charging.service.ChargingStationComponent;
 import com.yixiang.api.main.Application;
+import com.yixiang.api.recharge.service.RechargeInfoComponent;
 import com.yixiang.api.util.ChargeClientBuilder;
 import com.yixiang.api.util.Constants;
 import com.yixiang.api.util.DataUtil;
@@ -58,6 +59,8 @@ public class ChargerImporter {
 	@Autowired
 	private PayClientBuilder payClientBuilder;
 	@Autowired
+	private RechargeInfoComponent rechargeInfoComponent;
+	@Autowired
 	private BrandInfoComponent brandInfoComponent;
 	@Autowired
 	private ChargeClientBuilder chargeClientBuilder;
@@ -69,7 +72,7 @@ public class ChargerImporter {
 	@Test
 	public void test(){
 		try {
-			
+			rechargeInfoComponent.paySuccessCallback("20190428110323531015", "2019042822001473981032144743", 30f);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
