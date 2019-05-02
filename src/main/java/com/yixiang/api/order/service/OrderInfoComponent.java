@@ -506,8 +506,12 @@ public class OrderInfoComponent {
 		order.setTotalPower(null!=json.getFloat("charge_electric")?json.getFloat("charge_electric"):0);
 		order.setTotalServiceFee(null!=json.getFloat("service_money")?json.getFloat("service_money"):0);
 		order.setTotalPrice(DataUtil.round(order.getTotalPowerPrice()+order.getTotalServiceFee(), 2));
-		order.setStartTime(new Date(json.getLong("start_time")*1000));
-		order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
+		try {
+			order.setStartTime(new Date(json.getLong("start_time")*1000));
+			order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		order.setEndCode(json.getString("stop_code"));
 		order.setSoc(json.getString("soc"));
 		order.setPower(json.getFloat("voltage"));
@@ -540,9 +544,13 @@ public class OrderInfoComponent {
 		order.setTotalPower(null!=json.getFloat("total_power")?json.getFloat("total_power"):0);
 		order.setTotalServiceFee(null!=json.getFloat("service_money")?json.getFloat("service_money"):0);
 		order.setTotalPrice(DataUtil.round(order.getTotalPowerPrice()+order.getTotalServiceFee(), 2));
-		order.setStartTime(new Date(json.getLong("start_time")*1000));
-		order.setEndTime(new Date(json.getLong("stop_time")*1000));
-		order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
+		try {
+			order.setStartTime(new Date(json.getLong("start_time")*1000));
+			order.setEndTime(new Date(json.getLong("stop_time")*1000));
+			order.setTotalTime(Long.valueOf((new Date().getTime()-order.getStartTime().getTime())/1000).intValue());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return order;
 	}
 	
