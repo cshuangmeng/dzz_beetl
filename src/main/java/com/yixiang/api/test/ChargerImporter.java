@@ -72,7 +72,7 @@ public class ChargerImporter {
 	@Test
 	public void test(){
 		try {
-			rechargeInfoComponent.paySuccessCallback("20190428110323531015", "2019042822001473981032144743", 30f);
+			chargeClientBuilder.checkChargeOrders("47308082-2c42-45f5-a5e3-5f95814026b5");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
