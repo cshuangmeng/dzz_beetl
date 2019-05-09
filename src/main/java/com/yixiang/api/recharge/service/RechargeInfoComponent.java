@@ -67,6 +67,13 @@ public class RechargeInfoComponent {
 		Map<String,Object> http=ThreadCache.getHttpData();
 		String openId=!DataUtil.isEmpty(http.get(Constants.WXOPENID))?http.get(Constants.WXOPENID).toString():null;
 		UserInfo user=(UserInfo)ThreadCache.getData(Constants.USER);
+		//检查充值功能是否开放
+		JSONObject json=JSONObject.parseObject(Redis.use().get("recharge_config"));
+		if(!json.getBooleanValue("switch")){
+			log.info("充值功能尚未开放");
+			Result.putValue(ResponseCode.CodeEnum.FAIL.getValue(),json.getString("tip"),null);
+			return null;
+		}
 		//检查充值模板是否可用
 		RechargeTemplate template=rechargeTemplateComponent.getRechargeTemplate(templateId);
 		if(null==template){
@@ -93,7 +100,7 @@ public class RechargeInfoComponent {
 		rechargeInfoMapper.insertSelective(info);
 		//组装支付信息
 		Integer orderType=RefundSummary.ORDER_TYPE_ENUM.RECHARGE.getType();
-		JSONObject json=JSONArray.parseArray(Redis.use().get("pay_type_config")).getJSONObject(orderType-1);
+		json=JSONArray.parseArray(Redis.use().get("pay_type_config")).getJSONObject(orderType-1);
 		PayInfo pay=PayInfo.create().initSellerAccount(info.getPayWay(), info.getAccount(), info.getSource());
 		pay.setPayWay(info.getPayWay());
 		pay.setTradeNo(info.getTradeNo());
